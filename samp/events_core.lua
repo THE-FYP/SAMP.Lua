@@ -122,8 +122,6 @@ BitStreamIO.int1 = {
 local function processEvent(bs, callback, struct, ignorebits)
 	local args = {}
 	if bs ~= 0 then
-		-- DEBUG
-		print(struct[1] .. ' bits: ' .. raknetBitStreamGetNumberOfBitsUsed(bs) .. ', bytes: ' .. raknetBitStreamGetNumberOfBytesUsed(bs))
 		if ignorebits then
 			-- skip packet id
 			raknetBitStreamIgnoreBits(bs, ignorebits)
@@ -143,8 +141,6 @@ local function processEvent(bs, callback, struct, ignorebits)
 				table.insert(args, bsRead(bs, t))
 			end
 		end
-		-- DEBUG
-		print(struct[1] .. ' unread bits: ' .. raknetBitStreamGetNumberOfUnreadBits(bs))
 	end
 	local result = callback(unpack(args))
 	if result == false then
