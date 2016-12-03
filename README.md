@@ -6,11 +6,11 @@ Currently this library is work in progress. At this moment the only implemented 
 ## SAMP.Events
 Gives ability to handle SA:MP incoming and outcoming low-level network packets by very easy way.
 
-### Examples
-##### Intercept outgoing chat messages
+### Usage
 ```lua
 local sampev = 'lib.samp.events'
 
+-- intercept outgoing chat messages
 function sampev.onSendChat(msg)
   print('You said: ' .. msg)
 end
@@ -36,8 +36,8 @@ sampev.INTERFACE.INCOMING_RPCS[raknet.RPC.PLAYSOUND] = {'onPlaySound', {soundId 
 
 function sampev.onPlaySound(sound, x, y, z)
   -- add log message
-  print(string.format('Sound %d at coords %0.2f, %0.2f, %0.2f', x, y, z))
-  -- and mute it
+  print(string.format('Sound %d at coords %0.2f, %0.2f, %0.2f', sound, x, y, z))
+  -- and mute sound
   return false
 end
 ```
