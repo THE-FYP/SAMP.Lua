@@ -48,3 +48,4 @@ Copy the entire folder `samp` into the `moonloader/lib/` directory.
 
 ## Links
 MoonLoader: http://blast.hk/threads/13305/  
+Official thread at BlastHack: http://blast.hk/threads/14624/
