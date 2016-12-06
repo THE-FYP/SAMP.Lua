@@ -174,6 +174,7 @@ end
 
 local function processOutcomingSyncData(bs, structName)
 	local data = raknetBitStreamGetDataPtr(bs) + 1
+	local ffi = require 'ffi'
 	require 'lib.samp.synchronization'
 	return {ffi.cast('struct ' .. structName .. '*', data)}
 end
