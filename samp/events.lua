@@ -14,7 +14,49 @@ local INCOMING_RPCS     = events.INTERFACE.INCOMING_RPCS
 local INCOMING_PACKETS  = events.INTERFACE.INCOMING_PACKETS
 local BitStreamIO       = events.INTERFACE.BitStreamIO
 
---[[ custom handlers ]] --
+
+--- Support functions
+local function decompressHealthAndArmor(hpAp)
+	local hp = bit.rshift(hpAp, 4)
+	local armor = bit.band(hpAp, 0x0F)
+	if hp == 0x0F then hp = 100
+	elseif hp ~= 0 then hp = hp * 7
+	end
+	if armor == 0x0F then armor = 100
+	elseif armor ~= 0 then armor = armor * 7
+	end
+	return hp, armor
+end
+
+local function compressHealthAndArmor(hp, armor)
+	local hpAp = 0
+	if hp > 0 and hp < 100 then hpAp = bit.lshift(hp / 7, 4)
+	elseif hp >= 100 then hpAp = 0xF0
+	end
+	if armor > 0 and armor < 100 then hpAp = bit.bor(hpAp, armor / 7)
+	elseif armor >= 100 then hpAp = bit.bor(hpAp, 0x0F)
+	end
+	return hpAp
+end
+
+local function readSyncData(bs, type)
+	local ffi = require 'ffi'
+	require 'lib.samp.synchronization'
+	local dataStruct = ffi.new('struct ' .. type .. '[1]')
+	raknetBitStreamReadBuffer(bs, tonumber(ffi.cast('intptr_t', dataStruct)), ffi.sizeof('struct ' .. type))
+	return dataStruct[0]
+end
+
+local function writeSyncData(bs, type, ffiobj)
+	local ffi = require 'ffi'
+	require 'lib.samp.synchronization'
+	raknetBitStreamWriteBuffer(bs, tonumber(ffi.cast('intptr_t', ffiobj)), ffi.sizeof('struct ' .. type))
+end
+
+
+--- Сustom handlers
+local function emptyWriter() end
+
 local function processSendGiveTakeDamageReader(bs, take)
 	local read = events.EXPORTS.bitStreamRead
 	if read(bs, 'bool') ~= take then -- 'true' is take damage
@@ -179,9 +221,160 @@ local function processOutcomingSyncData(bs, structName)
 	return {ffi.cast('struct ' .. structName .. '*', data)}
 end
 
-local function emptyWriter() end
+local function onMarkersSyncReader(bs)
+	local markers = {}
+	local players = raknetBitStreamReadInt32(bs)
+	for i = 1, players do
+		local playerId = raknetBitStreamReadInt16(bs)
+		local active = raknetBitStreamReadBool(bs)
+		if active then
+			table.insert(markers, {playerId = playerId, active = true,
+				x = raknetBitStreamReadInt16(bs), y = raknetBitStreamReadInt16(bs), z = raknetBitStreamReadInt16(bs)})
+		else
+			table.insert(markers, {playerId = playerId, active = false})
+		end
+	end
+	return {markers}
+end
 
---[[ events ]]--
+local function onMarkersSyncWriter(bs, data)
+	raknetBitStreamWriteInt32(bs, #data)
+	for i = 1, #data do
+		local it = data[i]
+		raknetBitStreamWriteInt16(bs, it.playerId)
+		raknetBitStreamWriteBool(bs, it.active)
+		if it.active then
+			raknetBitStreamWriteInt16(bs, it.x)
+			raknetBitStreamWriteInt16(bs, it.y)
+			raknetBitStreamWriteInt16(bs, it.z)
+		end
+	end
+end
+
+local function onPlayerSyncReader(bs)
+	local has_value = raknetBitStreamReadBool
+	local read = events.EXPORTS.bitStreamRead
+	local data = {}
+
+	local playerId = raknetBitStreamReadInt16(bs)
+	if has_value(bs) then data.leftRightKeys = raknetBitStreamReadInt16(bs) end
+	if has_value(bs) then data.upDownKeys = raknetBitStreamReadInt16(bs) end
+	data.keysData = raknetBitStreamReadInt16(bs)
+	data.position = {x = raknetBitStreamReadFloat(bs), y = raknetBitStreamReadFloat(bs), z = raknetBitStreamReadFloat(bs)}
+	data.quaternion = read(bs, 'normQuat')
+	data.health, data.armor = decompressHealthAndArmor(raknetBitStreamReadInt8(bs))
+	data.weapon = raknetBitStreamReadInt8(bs)
+	data.specialAction = raknetBitStreamReadInt8(bs)
+	local movespeed = read(bs, 'fvector')
+	data.moveSpeed = {x = movespeed[1], y = movespeed[2], z = movespeed[3]}
+	if has_value(bs) then
+		data.surfingVehicleId = raknetBitStreamReadInt16(bs)
+		data.surfingOffsets = {x = raknetBitStreamReadFloat(bs), y = raknetBitStreamReadFloat(bs), z = raknetBitStreamReadFloat(bs)}
+	end
+	if has_value(bs) then
+		data.animationId = raknetBitStreamReadInt16(bs)
+		data.animationFlags = raknetBitStreamReadInt16(bs)
+	end
+
+	return {playerId, data}
+end
+
+local function onPlayerSyncWriter(bs, data)
+	local write = events.EXPORTS.bitStreamWrite
+	local playerId = data[1]
+	local data = data[2]
+
+	raknetBitStreamWriteInt16(bs, playerId)
+	raknetBitStreamWriteBool(bs, data.leftRightKeys ~= nil)
+	if data.leftRightKeys then raknetBitStreamWriteInt16(bs, data.leftRightKeys) end
+	raknetBitStreamWriteBool(bs, data.upDownKeys ~= nil)
+	if data.upDownKeys then raknetBitStreamWriteInt16(bs, data.upDownKeys) end
+	raknetBitStreamWriteInt16(bs, data.keysData)
+	raknetBitStreamWriteFloat(bs, data.position.x)
+	raknetBitStreamWriteFloat(bs, data.position.y)
+	raknetBitStreamWriteFloat(bs, data.position.z)
+	write(bs, 'normQuat', data.quaternion)
+	raknetBitStreamWriteInt8(bs, compressHealthAndArmor(data.health, data.armor))
+	raknetBitStreamWriteInt8(bs, data.weapon)
+	raknetBitStreamWriteInt8(bs, data.specialAction)
+	write(bs, 'fvector', {data.moveSpeed.x, data.moveSpeed.y, data.moveSpeed.z})
+	raknetBitStreamWriteBool(bs, data.surfingVehicleId ~= nil)
+	if data.surfingVehicleId then
+		raknetBitStreamWriteInt16(bs, data.surfingVehicleId)
+		raknetBitStreamWriteFloat(bs, data.surfingOffsets.x)
+		raknetBitStreamWriteFloat(bs, data.surfingOffsets.y)
+		raknetBitStreamWriteFloat(bs, data.surfingOffsets.z)
+	end
+	raknetBitStreamWriteBool(bs, data.animationId ~= nil)
+	if data.animationId then
+		raknetBitStreamWriteInt16(bs, data.animationId)
+		raknetBitStreamWriteInt16(bs, data.animationFlags)
+	end
+end
+
+local function onVehicleSyncReader(bs)
+	local read = events.EXPORTS.bitStreamRead
+	local data = {}
+
+	local playerId = raknetBitStreamReadInt16(bs)
+	local vehicleId = raknetBitStreamReadInt16(bs)
+	data.leftRightKeys = raknetBitStreamReadInt16(bs)
+	data.upDownKeys = raknetBitStreamReadInt16(bs)
+	data.keysData = raknetBitStreamReadInt16(bs)
+	data.quaternion = read(bs, 'normQuat')
+	data.position = {x = raknetBitStreamReadFloat(bs), y = raknetBitStreamReadFloat(bs), z = raknetBitStreamReadFloat(bs)}
+	local movespeed = read(bs, 'fvector')
+	data.moveSpeed = {x = movespeed[1], y = movespeed[2], z = movespeed[3]}
+	data.vehicleHealth = raknetBitStreamReadInt16(bs)
+	data.playerHealth, data.armor = decompressHealthAndArmor(raknetBitStreamReadInt8(bs))
+	data.currentWeapon = raknetBitStreamReadInt8(bs)
+	data.siren = raknetBitStreamReadBool(bs)
+	data.landingGear = raknetBitStreamReadBool(bs)
+	if raknetBitStreamReadBool(bs) then
+		data.trainSpeed = raknetBitStreamReadInt32(bs)
+	end
+	if raknetBitStreamReadBool(bs) then
+		data.trailerId = raknetBitStreamReadInt16(bs)
+	end
+
+	return {playerId, vehicleId, data}
+end
+
+local function onVehicleSyncWriter(bs, data)
+	local write = events.EXPORTS.bitStreamWrite
+	local playerId = data[1]
+	local vehicleId = data[2]
+	local data = data[3]
+
+	raknetBitStreamWriteInt16(bs, playerId)
+	raknetBitStreamWriteInt16(bs, vehicleId)
+	raknetBitStreamWriteInt16(bs, data.leftRightKeys)
+	raknetBitStreamWriteInt16(bs, data.upDownKeys)
+	raknetBitStreamWriteInt16(bs, data.keysData)
+	write(bs, 'normQuat', data.quaternion)
+	raknetBitStreamWriteFloat(bs, data.position.x)
+	raknetBitStreamWriteFloat(bs, data.position.y)
+	raknetBitStreamWriteFloat(bs, data.position.z)
+	write(bs, 'fvector', {data.moveSpeed.x, data.moveSpeed.y, data.moveSpeed.z})
+	raknetBitStreamWriteInt16(bs, data.vehicleHealth)
+	raknetBitStreamWriteInt8(bs, compressHealthAndArmor(data.playerHealth, data.armor))
+	raknetBitStreamWriteInt8(bs, data.currentWeapon)
+	raknetBitStreamWriteBool(bs, data.siren)
+	raknetBitStreamWriteBool(bs, data.landingGear)
+
+	raknetBitStreamWriteBool(bs, data.trainSpeed ~= nil)
+	if data.trainSpeed ~= nil then
+		raknetBitStreamWriteInt32(bs, data.trainSpeed)
+	end
+	raknetBitStreamWriteBool(bs, data.trailerId ~= nil)
+	if data.trailerId ~= nil then
+		raknetBitStreamWriteInt16(bs, data.trailerId)
+	end
+end
+
+
+--- Events
+-- Outgoing rpcs
 OUTCOMING_RPCS[RPC.ENTERVEHICLE]         = {'onSendEnterVehicle', {vehicleId = 'int16'}, {passenger = 'bool8'}}
 OUTCOMING_RPCS[RPC.CLICKPLAYER]          = {'onSendClickPlayer', {playerId = 'int16'}, {source = 'int8'}}
 OUTCOMING_RPCS[RPC.CLIENTJOIN]           = {'onSendClientJoin', {version = 'int32'}, {mod = 'int8'}, {nickname = 'string8'}, {joinAuthKey = 'string8'}, {clientVer = 'string8'}}
@@ -195,8 +388,8 @@ OUTCOMING_RPCS[RPC.SCMEVENT]             = {'onSendVehicleTuningNotification', {
 OUTCOMING_RPCS[RPC.CHAT]                 = {'onSendChat', {message = 'string8'}}
 OUTCOMING_RPCS[RPC.CLIENTCHECK]          = {'onSendClientCheckResponse', {'int8'}, {'int32'}, {'int8'}}
 OUTCOMING_RPCS[RPC.DAMAGEVEHICLE]        = {'onSendVehicleDamaged', {vehicleId = 'int16'}, {panelDmg = 'int32'}, {doorDmg = 'int32'}, {lights = 'int8'}, {tires = 'int8'}}
-OUTCOMING_RPCS[RPC.EDITATTACHEDOBJECT]   = {'onSendEditAttachedObject', {response = 'int32'}, {index = 'int32'}, {model = 'int32'}, {bone = 'int32'}, {posX = 'float'}, 
-																		{posY = 'float'}, {posZ = 'float'}, {rotX = 'float'}, {rotY = 'float'}, {rotZ = 'float'}, 
+OUTCOMING_RPCS[RPC.EDITATTACHEDOBJECT]   = {'onSendEditAttachedObject', {response = 'int32'}, {index = 'int32'}, {model = 'int32'}, {bone = 'int32'}, {posX = 'float'},
+																		{posY = 'float'}, {posZ = 'float'}, {rotX = 'float'}, {rotY = 'float'}, {rotZ = 'float'},
 																		{scaleX = 'float'}, {scaleY = 'float'}, {scaleZ = 'float'}, {color1 = 'int32'}, {color2 = 'int32'}}
 OUTCOMING_RPCS[RPC.EDITOBJECT]           = {'onSendEditObject', {playerObject = 'bool'}, {objectId = 'int16'}, {response = 'int32'}, {posX = 'float'},
 																{posY = 'float'}, {posZ = 'float'}, {rotX = 'float'}, {rotY = 'float'}, {rotZ = 'float'}}
@@ -216,8 +409,8 @@ OUTCOMING_RPCS[RPC.GIVETAKEDAMAGE]       = {{'onSendGiveDamage', -- int playerId
 																{'onSendTakeDamage', -- int playerId, float damage, int weapon, int bodypart
 																function(bs) return processSendGiveTakeDamageReader(bs, true) end,
 																function(bs, data) return processSendGiveTakeDamageWriter(bs, data, true) end}}
----
 
+-- Incoming rpcs
 -- int playerId, string hostName, table settings, table vehicleModels, int unknown
 INCOMING_RPCS[RPC.INITGAME]                 = {'onInitGame', onInitGameReader, onInitGameWriter}
 INCOMING_RPCS[RPC.SERVERJOIN]               = {'onPlayerJoin', {playerId = 'int16'}, {color = 'int32'}, {isNpc = 'bool8'}, {nickname = 'string8'}}
@@ -339,8 +532,9 @@ INCOMING_RPCS[RPC.WORLDVEHICLEADD]          = {'onVehicleStreamIn', {vehicleId =
 																	{panelDamage = 'int32'}, {doorDamage = 'int32'}, {lightsDamage = 'int8'}, {tiresDamage = 'int8'}}
 INCOMING_RPCS[RPC.WORLDVEHICLEREMOVE]       = {'onVehicleStreamOut', {vehicleId = 'int16'}}
 INCOMING_RPCS[RPC.WORLDPLAYERDEATH]         = {'onPlayerDeath', {playerId = 'int16'}}
----
+INCOMING_RPCS[RPC.ENTERVEHICLE]             = {'onPlayerEnterVehicle', {playerId = 'int16'}, {vehicleId = 'int16'}, {passenger = 'bool8'}}
 
+-- Outgoing packets
 OUTCOMING_PACKETS[PACKET.RCON_COMMAND]    = {'onSendRconCommand', {command = 'string32'}}
 OUTCOMING_PACKETS[PACKET.STATS_UPDATE]    = {'onSendStatsUpdate', {money = 'int32'}, {drunkLevel = 'int32'}}
 OUTCOMING_PACKETS[PACKET.PLAYER_SYNC]     = {'onSendPlayerSync',     function(bs) return processOutcomingSyncData(bs, 'PlayerSyncData') end, emptyWriter}
@@ -352,8 +546,85 @@ OUTCOMING_PACKETS[PACKET.TRAILER_SYNC]    = {'onSendTrailerSync',    function(bs
 OUTCOMING_PACKETS[PACKET.BULLET_SYNC]     = {'onSendBulletSync',     function(bs) return processOutcomingSyncData(bs, 'BulletSyncData') end, emptyWriter}
 OUTCOMING_PACKETS[PACKET.SPECTATOR_SYNC]  = {'onSendSpectatorSync',  function(bs) return processOutcomingSyncData(bs, 'SpectatorSyncData') end, emptyWriter}
 
+-- Incoming packets
+INCOMING_PACKETS[PACKET.PLAYER_SYNC]      = {'onPlayerSync', onPlayerSyncReader, onPlayerSyncWriter}
+INCOMING_PACKETS[PACKET.VEHICLE_SYNC]     = {'onVehicleSync', onVehicleSyncReader, onVehicleSyncWriter}
+INCOMING_PACKETS[PACKET.MARKERS_SYNC]     = {'onMarkersSync', onMarkersSyncReader, onMarkersSyncWriter}
+INCOMING_PACKETS[PACKET.AIM_SYNC]         = {'onAimSync', {playerId = 'int16'}, {data = 'aimSyncData'}}
+INCOMING_PACKETS[PACKET.BULLET_SYNC]      = {'onBulletSync', {playerId = 'int16'}, {data = 'bulletSyncData'}}
+INCOMING_PACKETS[PACKET.UNOCCUPIED_SYNC]  = {'onUnoccupiedSync', {playerId = 'int16'}, {data = 'unoccupiedSyncData'}}
+INCOMING_PACKETS[PACKET.TRAILER_SYNC]     = {'onTrailerSync', {playerId = 'int16'}, {data = 'trailerSyncData'}}
+INCOMING_PACKETS[PACKET.PASSENGER_SYNC]   = {'onPassengerSync', {playerId = 'int16'}, {data = 'passengerSyncData'}}
 
---[[ custom types ]]--
+
+--- Extra types
+BitStreamIO.compressedFloat = {
+	read = function(bs)
+		return raknetBitStreamReadInt16(bs) / 32767.5 - 1
+	end,
+	write = function(bs, value)
+		if value < -1 then
+			value = -1
+		elseif value > 1 then
+			value = 1
+		end
+		raknetBitStreamWriteInt16(bs, (value + 1) * 32767.5)
+	end
+}
+
+BitStreamIO.fvector = {
+	read = function(bs)
+		local magnitude = raknetBitStreamReadFloat(bs)
+		if magnitude ~= 0 then
+			local readCf = BitStreamIO.compressedFloat.read
+			return {readCf(bs) * magnitude, readCf(bs) * magnitude, readCf(bs) * magnitude}
+		else
+			return {0, 0, 0}
+		end
+	end,
+	write = function(bs, data)
+		local x, y, z = data[1], data[2], data[3]
+		local magnitude = math.sqrt(x * x + y * y + z * z)
+		raknetBitStreamWriteFloat(bs, magnitude)
+		if magnitude > 0 then
+			local writeCf = BitStreamIO.compressedFloat.write
+			writeCf(bs, x / magnitude)
+			writeCf(bs, y / magnitude)
+			writeCf(bs, z / magnitude)
+		end
+	end
+}
+
+BitStreamIO.normQuat = {
+	read = function(bs)
+		local readBool, readShort = raknetBitStreamReadBool, raknetBitStreamReadInt16
+		local cwNeg, cxNeg, cyNeg, czNeg = readBool(bs), readBool(bs), readBool(bs), readBool(bs)
+		local cx, cy, cz = readShort(bs), readShort(bs), readShort(bs)
+		local x = cx / 65535
+		local y = cy / 65535
+		local z = cz / 65535
+		if cxNeg then x = -x end
+		if cyNeg then y = -y end
+		if czNeg then z = -z end
+		local diff = 1 - x * x - y * y - z * z
+		if diff < 0 then diff = 0 end
+		local w = math.sqrt(diff)
+		if cwNeg then w = -w end
+		return {w, x, y, z}
+	end,
+	write = function(bs, value)
+		local w, x, y, z = value[1], value[2], value[3], value[4]
+		raknetBitStreamWriteBool(bs, w < 0)
+		raknetBitStreamWriteBool(bs, x < 0)
+		raknetBitStreamWriteBool(bs, y < 0)
+		raknetBitStreamWriteBool(bs, z < 0)
+		raknetBitStreamWriteInt16(bs, math.abs(x) * 65535)
+		raknetBitStreamWriteInt16(bs, math.abs(y) * 65535)
+		raknetBitStreamWriteInt16(bs, math.abs(z) * 65535)
+		-- w is calculates on the target
+	end
+}
+
 BitStreamIO.playerScorePingMap = {
 	read = function(bs)
 		local data = {}
@@ -403,6 +674,31 @@ BitStreamIO.string256 = {
 			end
 		end
 	end
+}
+
+BitStreamIO.aimSyncData = {
+	read = function(bs) 				return readSyncData(bs, 'AimSyncData')  end,
+	write = function(bs, value) writeSyncData(bs, 'AimSyncData', value) end
+}
+
+BitStreamIO.unoccupiedSyncData = {
+	read = function(bs) 				return readSyncData(bs, 'UnoccupiedSyncData')  end,
+	write = function(bs, value) writeSyncData(bs, 'UnoccupiedSyncData', value) end
+}
+
+BitStreamIO.passengerSyncData = {
+	read = function(bs) 				return readSyncData(bs, 'PassengerSyncData')  end,
+	write = function(bs, value) writeSyncData(bs, 'PassengerSyncData', value) end
+}
+
+BitStreamIO.bulletSyncData = {
+	read = function(bs) 				return readSyncData(bs, 'BulletSyncData')  end,
+	write = function(bs, value) writeSyncData(bs, 'BulletSyncData', value) end
+}
+
+BitStreamIO.trailerSyncData = {
+	read = function(bs) 				return readSyncData(bs, 'TrailerSyncData')  end,
+	write = function(bs, value) writeSyncData(bs, 'TrailerSyncData', value) end
 }
 
 return events
