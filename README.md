@@ -47,5 +47,5 @@ The same way you can add your own types for more complex packet structures. See 
 Copy the entire folder `samp` into the `moonloader/lib/` directory.
 
 ## Links
-MoonLoader: http://blast.hk/threads/13305/  
+MoonLoader: http://blast.hk/moonloader/  
 Official thread at BlastHack: http://blast.hk/threads/14624/
