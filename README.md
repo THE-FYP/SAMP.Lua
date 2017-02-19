@@ -8,7 +8,7 @@ Gives ability to handle SA:MP incoming and outcoming low-level network packets b
 
 ### Usage
 ```lua
-local sampev = 'lib.samp.events'
+local sampev = require 'lib.samp.events'
 
 -- intercept outgoing chat messages
 function sampev.onSendChat(msg)
