@@ -30,8 +30,8 @@ end
 ```
 ##### Adding your own packet handler
 ```lua
-local sampev = 'lib.samp.events'
-local raknet = 'lib.samp.raknet'
+local sampev = require 'lib.samp.events'
+local raknet = require 'lib.samp.raknet'
 sampev.INTERFACE.INCOMING_RPCS[raknet.RPC.PLAYSOUND] = {'onPlaySound', {soundId = 'int32'}, {x = 'float'}, {y = 'float'}, {z = 'float'}}
 
 function sampev.onPlaySound(sound, x, y, z)
