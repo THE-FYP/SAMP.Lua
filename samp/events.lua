@@ -473,7 +473,7 @@ INCOMING_RPCS[RPC.SETSPAWNINFO]             = {'onSetSpawnInfo', {team = 'int8'}
 -- INCOMING_RPCS[RPC.FORCECLASSSELECTION] = {''}
 -- INCOMING_RPCS[RPC.ATTACHOBJECTTOPLAYER] = {''}
 -- int menuId, string title, float x, float y, bool twoColumns, table columns, table rows, bool menuUnk
-INCOMING_RPCS[RPC.INITMENU]                 = {'onInitMenu', onInitGameReader, onInitMenuWriter}
+INCOMING_RPCS[RPC.INITMENU]                 = {'onInitMenu', onInitMenuReader, onInitMenuWriter}
 INCOMING_RPCS[RPC.SHOWMENU]                 = {'onShowMenu', {menuId = 'int8'}}
 INCOMING_RPCS[RPC.HIDEMENU]                 = {'onHideMenu', {menuId = 'int8'}}
 -- INCOMING_RPCS[RPC.CREATEEXPLOSION] = {''}
