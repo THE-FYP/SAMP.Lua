@@ -91,8 +91,8 @@ BitStreamIO.string256 = {
 	end
 }
 
-BitStreamIO.encodedString2048 = {
-	read = function(bs) return raknetBitStreamDecodeString(bs, 2048) end,
+BitStreamIO.encodedString4096 = {
+	read = function(bs) return raknetBitStreamDecodeString(bs, 4096) end,
 	write = function(bs, value) raknetBitStreamEncodeString(bs, value) end
 }
 
@@ -162,5 +162,27 @@ BitStreamIO.normQuat = {
 		-- w is calculates on the target
 	end
 }
+
+BitStreamIO.vector3d = {
+	read = function(bs)
+		local Vector3D = require 'lib.vector3d'
+		return {Vector3D(raknetBitStreamReadFloat(bs), raknetBitStreamReadFloat(bs), raknetBitStreamReadFloat(bs))}
+	end,
+	write = function(bs, value)
+		raknetBitStreamWriteFloat(bs, value.x, value.y, value.z)
+	end
+}
+
+
+function bitstream_io_interface(field)
+	return setmetatable({}, {
+		__index = function(t, index)
+			return BitStreamIO[index][field]
+		end
+	})
+end
+
+BitStreamIO.bs_read = bitstream_io_interface('read')
+BitStreamIO.bs_write = bitstream_io_interface('write')
 
 return BitStreamIO

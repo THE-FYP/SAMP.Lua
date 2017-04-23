@@ -6,6 +6,7 @@
 
 local events            = require 'lib.samp.events.core'
 local raknet            = require 'lib.samp.raknet'
+local utils             = require 'lib.samp.events.utils'
 local RPC               = raknet.RPC
 local PACKET            = raknet.PACKET
 local OUTCOMING_RPCS    = events.INTERFACE.OUTCOMING_RPCS
@@ -15,49 +16,10 @@ local INCOMING_PACKETS  = events.INTERFACE.INCOMING_PACKETS
 local BitStreamIO       = events.INTERFACE.BitStreamIO
 
 
---- Support functions
-local function decompressHealthAndArmor(hpAp)
-	local hp = bit.rshift(hpAp, 4)
-	local armor = bit.band(hpAp, 0x0F)
-	if hp == 0x0F then hp = 100
-	elseif hp ~= 0 then hp = hp * 7
-	end
-	if armor == 0x0F then armor = 100
-	elseif armor ~= 0 then armor = armor * 7
-	end
-	return hp, armor
-end
-
-local function compressHealthAndArmor(hp, armor)
-	local hpAp = 0
-	if hp > 0 and hp < 100 then hpAp = bit.lshift(hp / 7, 4)
-	elseif hp >= 100 then hpAp = 0xF0
-	end
-	if armor > 0 and armor < 100 then hpAp = bit.bor(hpAp, armor / 7)
-	elseif armor >= 100 then hpAp = bit.bor(hpAp, 0x0F)
-	end
-	return hpAp
-end
-
-local function readSyncData(bs, type)
-	local ffi = require 'ffi'
-	require 'lib.samp.synchronization'
-	local dataStruct = ffi.new('struct ' .. type .. '[1]')
-	raknetBitStreamReadBuffer(bs, tonumber(ffi.cast('intptr_t', dataStruct)), ffi.sizeof('struct ' .. type))
-	return dataStruct[0]
-end
-
-local function writeSyncData(bs, type, ffiobj)
-	local ffi = require 'ffi'
-	require 'lib.samp.synchronization'
-	raknetBitStreamWriteBuffer(bs, tonumber(ffi.cast('intptr_t', ffiobj)), ffi.sizeof('struct ' .. type))
-end
-
-
 --- Сustom handlers
-local function emptyWriter() end
+local function empty_writer() end
 
-local function processSendGiveTakeDamageReader(bs, take)
+local function process_send_give_take_damage_reader(bs, take)
 	local read = events.EXPORTS.bitStreamRead
 	if read(bs, 'bool') ~= take then -- 'true' is take damage
 		return false
@@ -71,7 +33,7 @@ local function processSendGiveTakeDamageReader(bs, take)
 	return data
 end
 
-local function processSendGiveTakeDamageWriter(bs, data, take)
+local function process_send_give_take_damage_writer(bs, data, take)
 	local write = events.EXPORTS.bitStreamWrite
 	write(bs, 'bool',  take) -- give or take
 	write(bs, 'int16', data[1]) -- playerId
@@ -80,7 +42,7 @@ local function processSendGiveTakeDamageWriter(bs, data, take)
 	write(bs, 'int32', data[4]) -- bodypart
 end
 
-local function onInitGameReader(bs)
+local function on_init_game_reader(bs)
 	local read                     = events.EXPORTS.bitStreamRead
 	local settings                 = {}
 	settings.zoneNames             = read(bs, 'bool')
@@ -117,7 +79,7 @@ local function onInitGameReader(bs)
 	return {playerId, hostName, settings, vehicleModels, unknown}
 end
 
-local function onInitGameWriter(bs, data)
+local function on_init_game_writer(bs, data)
 	local write = events.EXPORTS.bitStreamWrite
 	local settings = data[3]
 	local vehicleModels = data[4]
@@ -153,7 +115,7 @@ local function onInitGameWriter(bs, data)
 	write(bs, 'int32', data[5]) -- unknown
 end
 
-local function onInitMenuReader(bs)
+local function on_init_menu_reader(bs)
 	local read = events.EXPORTS.bitStreamRead
 	local MAX_MENU_ITEMS = 12
 	local MAX_MENU_LINE = 32
@@ -190,7 +152,7 @@ local function onInitMenuReader(bs)
 	return {menuId, menuTitle, x, y, twoColumns, columns, rows, menu}
 end
 
-local function onInitMenuWriter(bs, data)
+local function on_init_menu_writer(bs, data)
 	local write = events.EXPORTS.bitStreamWrite
 	local columns = data[6]
 	write(bs, 'int8', data[1])      -- menuId
@@ -214,14 +176,14 @@ local function onInitMenuWriter(bs, data)
 	end
 end
 
-local function processOutcomingSyncData(bs, structName)
+local function process_outcoming_sync_data(bs, structName)
 	local data = raknetBitStreamGetDataPtr(bs) + 1
 	local ffi = require 'ffi'
 	require 'lib.samp.synchronization'
 	return {ffi.cast('struct ' .. structName .. '*', data)}
 end
 
-local function onMarkersSyncReader(bs)
+local function on_markers_sync_reader(bs)
 	local markers = {}
 	local players = raknetBitStreamReadInt32(bs)
 	for i = 1, players do
@@ -237,7 +199,7 @@ local function onMarkersSyncReader(bs)
 	return {markers}
 end
 
-local function onMarkersSyncWriter(bs, data)
+local function on_markers_sync_writer(bs, data)
 	raknetBitStreamWriteInt32(bs, #data)
 	for i = 1, #data do
 		local it = data[i]
@@ -251,7 +213,7 @@ local function onMarkersSyncWriter(bs, data)
 	end
 end
 
-local function onPlayerSyncReader(bs)
+local function on_player_sync_reader(bs)
 	local has_value = raknetBitStreamReadBool
 	local read = events.EXPORTS.bitStreamRead
 	local data = {}
@@ -262,7 +224,7 @@ local function onPlayerSyncReader(bs)
 	data.keysData = raknetBitStreamReadInt16(bs)
 	data.position = {x = raknetBitStreamReadFloat(bs), y = raknetBitStreamReadFloat(bs), z = raknetBitStreamReadFloat(bs)}
 	data.quaternion = read(bs, 'normQuat')
-	data.health, data.armor = decompressHealthAndArmor(raknetBitStreamReadInt8(bs))
+	data.health, data.armor = utils.decompress_health_and_armor(raknetBitStreamReadInt8(bs))
 	data.weapon = raknetBitStreamReadInt8(bs)
 	data.specialAction = raknetBitStreamReadInt8(bs)
 	local movespeed = read(bs, 'compressedVector')
@@ -279,7 +241,7 @@ local function onPlayerSyncReader(bs)
 	return {playerId, data}
 end
 
-local function onPlayerSyncWriter(bs, data)
+local function on_player_sync_writer(bs, data)
 	local write = events.EXPORTS.bitStreamWrite
 	local playerId = data[1]
 	local data = data[2]
@@ -294,7 +256,7 @@ local function onPlayerSyncWriter(bs, data)
 	raknetBitStreamWriteFloat(bs, data.position.y)
 	raknetBitStreamWriteFloat(bs, data.position.z)
 	write(bs, 'normQuat', data.quaternion)
-	raknetBitStreamWriteInt8(bs, compressHealthAndArmor(data.health, data.armor))
+	raknetBitStreamWriteInt8(bs, utils.compress_health_and_armor(data.health, data.armor))
 	raknetBitStreamWriteInt8(bs, data.weapon)
 	raknetBitStreamWriteInt8(bs, data.specialAction)
 	write(bs, 'compressedVector', {data.moveSpeed.x, data.moveSpeed.y, data.moveSpeed.z})
@@ -312,7 +274,7 @@ local function onPlayerSyncWriter(bs, data)
 	end
 end
 
-local function onVehicleSyncReader(bs)
+local function on_vehicle_sync_reader(bs)
 	local read = events.EXPORTS.bitStreamRead
 	local data = {}
 
@@ -326,7 +288,7 @@ local function onVehicleSyncReader(bs)
 	local movespeed = read(bs, 'compressedVector')
 	data.moveSpeed = {x = movespeed[1], y = movespeed[2], z = movespeed[3]}
 	data.vehicleHealth = raknetBitStreamReadInt16(bs)
-	data.playerHealth, data.armor = decompressHealthAndArmor(raknetBitStreamReadInt8(bs))
+	data.playerHealth, data.armor = utils.decompress_health_and_armor(raknetBitStreamReadInt8(bs))
 	data.currentWeapon = raknetBitStreamReadInt8(bs)
 	data.siren = raknetBitStreamReadBool(bs)
 	data.landingGear = raknetBitStreamReadBool(bs)
@@ -340,7 +302,7 @@ local function onVehicleSyncReader(bs)
 	return {playerId, vehicleId, data}
 end
 
-local function onVehicleSyncWriter(bs, data)
+local function on_vehicle_sync_writer(bs, data)
 	local write = events.EXPORTS.bitStreamWrite
 	local playerId = data[1]
 	local vehicleId = data[2]
@@ -357,7 +319,7 @@ local function onVehicleSyncWriter(bs, data)
 	raknetBitStreamWriteFloat(bs, data.position.z)
 	write(bs, 'compressedVector', {data.moveSpeed.x, data.moveSpeed.y, data.moveSpeed.z})
 	raknetBitStreamWriteInt16(bs, data.vehicleHealth)
-	raknetBitStreamWriteInt8(bs, compressHealthAndArmor(data.playerHealth, data.armor))
+	raknetBitStreamWriteInt8(bs, utils.compress_health_and_armor(data.playerHealth, data.armor))
 	raknetBitStreamWriteInt8(bs, data.currentWeapon)
 	raknetBitStreamWriteBool(bs, data.siren)
 	raknetBitStreamWriteBool(bs, data.landingGear)
@@ -400,19 +362,21 @@ OUTCOMING_RPCS[RPC.VEHICLEDESTROYED]     = {'onSendVehicleDestroyed', {vehicleId
 OUTCOMING_RPCS[RPC.MENUQUIT]             = {'onSendQuitMenu'}
 OUTCOMING_RPCS[RPC.EXITVEHICLE]          = {'onSendExitVehicle', {vehicleId = 'int16'}}
 OUTCOMING_RPCS[RPC.UPDATESCORESPINGSIPS] = {'onSendUpdateScoresAndPings'}
-OUTCOMING_RPCS[RPC.GIVETAKEDAMAGE]       = {{'onSendGiveDamage', -- int playerId, float damage, int weapon, int bodypart
-	function(bs) return processSendGiveTakeDamageReader(bs, false) end,
-	function(bs, data) return processSendGiveTakeDamageWriter(bs, data, false) end},
+OUTCOMING_RPCS[RPC.GIVETAKEDAMAGE]       = {
+	{'onSendGiveDamage', -- int playerId, float damage, int weapon, int bodypart
+	function(bs) return process_send_give_take_damage_reader(bs, false) end,
+	function(bs, data) return process_send_give_take_damage_writer(bs, data, false) end},
 	{'onSendTakeDamage', -- int playerId, float damage, int weapon, int bodypart
-	function(bs) return processSendGiveTakeDamageReader(bs, true) end,
-	function(bs, data) return processSendGiveTakeDamageWriter(bs, data, true) end}}
+	function(bs) return process_send_give_take_damage_reader(bs, true) end,
+	function(bs, data) return process_send_give_take_damage_writer(bs, data, true) end}
+}
 
 -- Incoming rpcs
 -- int playerId, string hostName, table settings, table vehicleModels, int unknown
 INCOMING_RPCS[RPC.INITGAME]                 = {'onInitGame', onInitGameReader, onInitGameWriter}
 INCOMING_RPCS[RPC.SERVERJOIN]               = {'onPlayerJoin', {playerId = 'int16'}, {color = 'int32'}, {isNpc = 'bool8'}, {nickname = 'string8'}}
 INCOMING_RPCS[RPC.SERVERQUIT]               = {'onPlayerQuit', {playerId = 'int16'}, {reason = 'int8'}}
-INCOMING_RPCS[RPC.REQUESTCLASS]             = {'onRequestClassResponse', {canSpawn = 'bool8'}, {team = 'int8'}, {skin = 'int32'}, {unk = 'int8'}, {x = 'float'}, {y = 'float'}, {z = 'float'}, {rotation = 'float'}, {weapons = 'int32arr3'}, {ammo = 'int32arr3'}}
+INCOMING_RPCS[RPC.REQUESTCLASS]             = {'onRequestClassResponse', {canSpawn = 'bool8'}, {team = 'int8'}, {skin = 'int32'}, {unk = 'int8'}, {x = 'float'}, {y = 'float'}, {z = 'float'}, {rotation = 'float'}, {weapons = 'Int32Array3'}, {ammo = 'Int32Array3'}}
 INCOMING_RPCS[RPC.REQUESTSPAWN]             = {'onRequestSpawnResponse', {response = 'bool8'}}
 INCOMING_RPCS[RPC.SETPLAYERNAME] = {'onSetPlayerName', {name = 'string8'}} -- TODO: test
 INCOMING_RPCS[RPC.SETPLAYERPOS]             = {'onSetPlayerPos', {x = 'float'}, {y = 'float'}, {z = 'float'}}
@@ -434,7 +398,7 @@ INCOMING_RPCS[RPC.WORLDPLAYERADD]           = {'onPlayerStreamIn', {playerId = '
 INCOMING_RPCS[RPC.SETPLAYERSHOPNAME] = {'onSetShopName', {text = 'string8'}} -- TODO: test
 INCOMING_RPCS[RPC.SETPLAYERSKILLLEVEL] = {'onSetPlayerSkillLevel', {playerId = 'int16'}, {skill = 'int32'}, {level = 'int16'}} -- TODO: test
 INCOMING_RPCS[RPC.SETPLAYERDRUNKLEVEL] = {'onSetPlayerDrunk', {drunkLevel = 'int32'}} -- TODO: test
-INCOMING_RPCS[RPC.CREATE3DTEXTLABEL]        = {'onCreate3DText', {id = 'int16'}, {color = 'int32'}, {posX = 'float'}, {posY = 'float'}, {posZ = 'float'}, {distance = 'float'}, {testLOS = 'bool8'}, {attachedPlayerId = 'int16'}, {attachedVehicleId = 'int16'}, {text = 'encodedString2048'}}
+INCOMING_RPCS[RPC.CREATE3DTEXTLABEL]        = {'onCreate3DText', {id = 'int16'}, {color = 'int32'}, {posX = 'float'}, {posY = 'float'}, {posZ = 'float'}, {distance = 'float'}, {testLOS = 'bool8'}, {attachedPlayerId = 'int16'}, {attachedVehicleId = 'int16'}, {text = 'encodedString4096'}}
 INCOMING_RPCS[RPC.DISABLECHECKPOINT] = {'onDisableCheckpoint'} -- TODO: test
 INCOMING_RPCS[RPC.SETRACECHECKPOINT] = {'onSetRaceCheckpoint', {type = 'int8'}, {x = 'float'}, {y = 'float'}, {z = 'float'}, {nextX = 'float'}, {nextY = 'float'}, {nextZ = 'float'}, {size = 'float'}} -- TODO: test
 INCOMING_RPCS[RPC.DISABLERACECHECKPOINT] = {'onDisableRaceCheckpoint'} -- TODO: test
@@ -452,12 +416,12 @@ INCOMING_RPCS[RPC.REMOVEVEHICLECOMPONENT] = {'onRemoveVehicleComponent', {vehicl
 INCOMING_RPCS[RPC.UPDATE3DTEXTLABEL] = {'onRemove3DTextLabel', {textLabelId = 'int16'}} -- TODO: test
 INCOMING_RPCS[RPC.CHATBUBBLE]               = {'onPlayerChatBubble', {playerId = 'int16'}, {color = 'int32'}, {distance = 'float'}, {duration = 'int32'}, {message = 'string8'}}
 INCOMING_RPCS[RPC.UPDATETIME]               = {'onUpdateGlobalTimer', {time = 'int32'}}
-INCOMING_RPCS[RPC.SHOWDIALOG]               = {'onShowDialog', {dialogId = 'int16'}, {style = 'int8'}, {title = 'string8'}, {button1 = 'string8'}, {button2 = 'string8'}, {text = 'encodedString2048'}}
+INCOMING_RPCS[RPC.SHOWDIALOG]               = {'onShowDialog', {dialogId = 'int16'}, {style = 'int8'}, {title = 'string8'}, {button1 = 'string8'}, {button2 = 'string8'}, {text = 'encodedString4096'}}
 INCOMING_RPCS[RPC.DESTROYPICKUP]            = {'onDestroyPickup', {id = 'int32'}}
 INCOMING_RPCS[RPC.LINKVEHICLETOINTERIOR] = {'onLinkVehicleToInterior', {vehicleId = 'int16'}, {interiorId = 'int8'}} -- TODO: test
 INCOMING_RPCS[RPC.SETPLAYERARMOUR] = {'onSetPlayerArmour', {armour = 'float'}} -- TODO: test
 INCOMING_RPCS[RPC.SETPLAYERARMEDWEAPON] = {'onSetPlayerArmedWeapon', {weaponId = 'int32'}} -- TODO: test
-INCOMING_RPCS[RPC.SETSPAWNINFO]             = {'onSetSpawnInfo', {team = 'int8'}, {skin = 'int32'}, {unk = 'int8'}, {x = 'float'}, {y = 'float'}, {z = 'float'}, {rotation = 'float'}, {weapons = 'int32arr3'}, {ammo = 'int32arr3'}}
+INCOMING_RPCS[RPC.SETSPAWNINFO]             = {'onSetSpawnInfo', {team = 'int8'}, {skin = 'int32'}, {unk = 'int8'}, {x = 'float'}, {y = 'float'}, {z = 'float'}, {rotation = 'float'}, {weapons = 'Int32Array3'}, {ammo = 'Int32Array3'}}
 INCOMING_RPCS[RPC.SETPLAYERTEAM] = {'onSetPlayerTeam', {playerId = 'int16'}, {teamId = 'int8'}} -- TODO: test
 INCOMING_RPCS[RPC.PUTPLAYERINVEHICLE] = {'onPutPlayerInVehicle', {vehicleId = 'int16'}, {seatId = 'int8'}} -- TODO: test
 INCOMING_RPCS[RPC.REMOVEPLAYERFROMVEHICLE] = {'onRemovePlayerFromVehicle'} -- TODO: test
@@ -524,32 +488,33 @@ INCOMING_RPCS[RPC.WORLDVEHICLEADD]          = {'onVehicleStreamIn', {vehicleId =
 INCOMING_RPCS[RPC.WORLDVEHICLEREMOVE]       = {'onVehicleStreamOut', {vehicleId = 'int16'}}
 INCOMING_RPCS[RPC.WORLDPLAYERDEATH]         = {'onPlayerDeath', {playerId = 'int16'}}
 INCOMING_RPCS[RPC.ENTERVEHICLE]             = {'onPlayerEnterVehicle', {playerId = 'int16'}, {vehicleId = 'int16'}, {passenger = 'bool8'}}
+INCOMING_RPCS[RPC.UPDATESCORESPINGSIPS]     = {'onUpdateScoresAndPings', {playerList = 'PlayerScorePingMap'}}
 
 -- Outgoing packets
 OUTCOMING_PACKETS[PACKET.RCON_COMMAND]    = {'onSendRconCommand', {command = 'string32'}}
 OUTCOMING_PACKETS[PACKET.STATS_UPDATE]    = {'onSendStatsUpdate', {money = 'int32'}, {drunkLevel = 'int32'}}
-OUTCOMING_PACKETS[PACKET.PLAYER_SYNC]     = {'onSendPlayerSync',     function(bs) return processOutcomingSyncData(bs, 'PlayerSyncData') end, emptyWriter}
-OUTCOMING_PACKETS[PACKET.VEHICLE_SYNC]    = {'onSendVehicleSync',    function(bs) return processOutcomingSyncData(bs, 'VehicleSyncData') end, emptyWriter}
-OUTCOMING_PACKETS[PACKET.PASSENGER_SYNC]  = {'onSendPassengerSync',  function(bs) return processOutcomingSyncData(bs, 'PassengerSyncData') end, emptyWriter}
-OUTCOMING_PACKETS[PACKET.AIM_SYNC]        = {'onSendAimSync',        function(bs) return processOutcomingSyncData(bs, 'AimSyncData') end, emptyWriter}
-OUTCOMING_PACKETS[PACKET.UNOCCUPIED_SYNC] = {'onSendUnoccupiedSync', function(bs) return processOutcomingSyncData(bs, 'UnoccupiedSyncData') end, emptyWriter}
-OUTCOMING_PACKETS[PACKET.TRAILER_SYNC]    = {'onSendTrailerSync',    function(bs) return processOutcomingSyncData(bs, 'TrailerSyncData') end, emptyWriter}
-OUTCOMING_PACKETS[PACKET.BULLET_SYNC]     = {'onSendBulletSync',     function(bs) return processOutcomingSyncData(bs, 'BulletSyncData') end, emptyWriter}
-OUTCOMING_PACKETS[PACKET.SPECTATOR_SYNC]  = {'onSendSpectatorSync',  function(bs) return processOutcomingSyncData(bs, 'SpectatorSyncData') end, emptyWriter}
+OUTCOMING_PACKETS[PACKET.PLAYER_SYNC]     = {'onSendPlayerSync',     function(bs) return process_outcoming_sync_data(bs, 'PlayerSyncData') end, empty_writer}
+OUTCOMING_PACKETS[PACKET.VEHICLE_SYNC]    = {'onSendVehicleSync',    function(bs) return process_outcoming_sync_data(bs, 'VehicleSyncData') end, empty_writer}
+OUTCOMING_PACKETS[PACKET.PASSENGER_SYNC]  = {'onSendPassengerSync',  function(bs) return process_outcoming_sync_data(bs, 'PassengerSyncData') end, empty_writer}
+OUTCOMING_PACKETS[PACKET.AIM_SYNC]        = {'onSendAimSync',        function(bs) return process_outcoming_sync_data(bs, 'AimSyncData') end, empty_writer}
+OUTCOMING_PACKETS[PACKET.UNOCCUPIED_SYNC] = {'onSendUnoccupiedSync', function(bs) return process_outcoming_sync_data(bs, 'UnoccupiedSyncData') end, empty_writer}
+OUTCOMING_PACKETS[PACKET.TRAILER_SYNC]    = {'onSendTrailerSync',    function(bs) return process_outcoming_sync_data(bs, 'TrailerSyncData') end, empty_writer}
+OUTCOMING_PACKETS[PACKET.BULLET_SYNC]     = {'onSendBulletSync',     function(bs) return process_outcoming_sync_data(bs, 'BulletSyncData') end, empty_writer}
+OUTCOMING_PACKETS[PACKET.SPECTATOR_SYNC]  = {'onSendSpectatorSync',  function(bs) return process_outcoming_sync_data(bs, 'SpectatorSyncData') end, empty_writer}
 
 -- Incoming packets
-INCOMING_PACKETS[PACKET.PLAYER_SYNC]      = {'onPlayerSync', onPlayerSyncReader, onPlayerSyncWriter}
-INCOMING_PACKETS[PACKET.VEHICLE_SYNC]     = {'onVehicleSync', onVehicleSyncReader, onVehicleSyncWriter}
-INCOMING_PACKETS[PACKET.MARKERS_SYNC]     = {'onMarkersSync', onMarkersSyncReader, onMarkersSyncWriter}
-INCOMING_PACKETS[PACKET.AIM_SYNC]         = {'onAimSync', {playerId = 'int16'}, {data = 'aimSyncData'}}
-INCOMING_PACKETS[PACKET.BULLET_SYNC]      = {'onBulletSync', {playerId = 'int16'}, {data = 'bulletSyncData'}}
-INCOMING_PACKETS[PACKET.UNOCCUPIED_SYNC]  = {'onUnoccupiedSync', {playerId = 'int16'}, {data = 'unoccupiedSyncData'}}
-INCOMING_PACKETS[PACKET.TRAILER_SYNC]     = {'onTrailerSync', {playerId = 'int16'}, {data = 'trailerSyncData'}}
-INCOMING_PACKETS[PACKET.PASSENGER_SYNC]   = {'onPassengerSync', {playerId = 'int16'}, {data = 'passengerSyncData'}}
+INCOMING_PACKETS[PACKET.PLAYER_SYNC]      = {'onPlayerSync', on_player_sync_reader, on_player_sync_writer}
+INCOMING_PACKETS[PACKET.VEHICLE_SYNC]     = {'onVehicleSync', on_vehicle_sync_reader, on_vehicle_sync_writer}
+INCOMING_PACKETS[PACKET.MARKERS_SYNC]     = {'onMarkersSync', on_markers_sync_reader, on_markers_sync_writer}
+INCOMING_PACKETS[PACKET.AIM_SYNC]         = {'onAimSync', {playerId = 'int16'}, {data = 'AimSyncData'}}
+INCOMING_PACKETS[PACKET.BULLET_SYNC]      = {'onBulletSync', {playerId = 'int16'}, {data = 'BulletSyncData'}}
+INCOMING_PACKETS[PACKET.UNOCCUPIED_SYNC]  = {'onUnoccupiedSync', {playerId = 'int16'}, {data = 'UnoccupiedSyncData'}}
+INCOMING_PACKETS[PACKET.TRAILER_SYNC]     = {'onTrailerSync', {playerId = 'int16'}, {data = 'TrailerSyncData'}}
+INCOMING_PACKETS[PACKET.PASSENGER_SYNC]   = {'onPassengerSync', {playerId = 'int16'}, {data = 'PassengerSyncData'}}
 
 
 --- Extra types
-BitStreamIO.playerScorePingMap = {
+BitStreamIO.PlayerScorePingMap = {
 	read = function(bs)
 		local data = {}
 		for i = 1, raknetBitStreamGetNumberOfBytesUsed(bs) / 10 do
@@ -569,7 +534,7 @@ BitStreamIO.playerScorePingMap = {
 	end
 }
 
-BitStreamIO.int32arr3 = {
+BitStreamIO.Int32Array3 = {
 	read = function(bs)
 		local arr = {}
 		for i = 1, 3 do arr[i] = raknetBitStreamReadInt32(bs) end
@@ -580,40 +545,29 @@ BitStreamIO.int32arr3 = {
 	end
 }
 
-BitStreamIO.vector2d = {
-	read = function(bs)
-		local arr = {}
-		for i = 1, 2 do arr[i] = raknetBitStreamReadInt32(bs) end
-		return arr
-	end,
-	write = function(bs, value)
-		for i = 1, 2 do raknetBitStreamWriteInt32(bs, value[i]) end
-	end
+BitStreamIO.AimSyncData = {
+	read = function(bs) return utils.read_sync_data(bs, 'AimSyncData')  end,
+	write = function(bs, value) utils.write_sync_data(bs, 'AimSyncData', value) end
 }
 
-BitStreamIO.aimSyncData = {
-	read = function(bs) 				return readSyncData(bs, 'AimSyncData')  end,
-	write = function(bs, value) writeSyncData(bs, 'AimSyncData', value) end
+BitStreamIO.UnoccupiedSyncData = {
+	read = function(bs) return utils.read_sync_data(bs, 'UnoccupiedSyncData')  end,
+	write = function(bs, value) utils.write_sync_data(bs, 'UnoccupiedSyncData', value) end
 }
 
-BitStreamIO.unoccupiedSyncData = {
-	read = function(bs) 				return readSyncData(bs, 'UnoccupiedSyncData')  end,
-	write = function(bs, value) writeSyncData(bs, 'UnoccupiedSyncData', value) end
+BitStreamIO.PassengerSyncData = {
+	read = function(bs) 	return utils.read_sync_data(bs, 'PassengerSyncData')  end,
+	write = function(bs, value) utils.write_sync_data(bs, 'PassengerSyncData', value) end
 }
 
-BitStreamIO.passengerSyncData = {
-	read = function(bs) 				return readSyncData(bs, 'PassengerSyncData')  end,
-	write = function(bs, value) writeSyncData(bs, 'PassengerSyncData', value) end
+BitStreamIO.BulletSyncData = {
+	read = function(bs) return utils.read_sync_data(bs, 'BulletSyncData')  end,
+	write = function(bs, value) utils.write_sync_data(bs, 'BulletSyncData', value) end
 }
 
-BitStreamIO.bulletSyncData = {
-	read = function(bs) 				return readSyncData(bs, 'BulletSyncData')  end,
-	write = function(bs, value) writeSyncData(bs, 'BulletSyncData', value) end
-}
-
-BitStreamIO.trailerSyncData = {
-	read = function(bs) 				return readSyncData(bs, 'TrailerSyncData')  end,
-	write = function(bs, value) writeSyncData(bs, 'TrailerSyncData', value) end
+BitStreamIO.TrailerSyncData = {
+	read = function(bs) return utils.read_sync_data(bs, 'TrailerSyncData')  end,
+	write = function(bs, value) utils.write_sync_data(bs, 'TrailerSyncData', value) end
 }
 
 return events

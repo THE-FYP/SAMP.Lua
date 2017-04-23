@@ -23,11 +23,11 @@ assert(isSampLoaded(), 'SA:MP is not loaded')
 assert(isSampfuncsLoaded(), 'samp.events requires SAMPFUNCS')
 assert(getMoonloaderVersion() >= 20, 'samp.events requires MoonLoader v.020 or greater')
 
-local OUTCOMING_RPCS    = MODULE.INTERFACE.OUTCOMING_RPCS
-local OUTCOMING_PACKETS = MODULE.INTERFACE.OUTCOMING_PACKETS
-local INCOMING_RPCS     = MODULE.INTERFACE.INCOMING_RPCS
-local INCOMING_PACKETS  = MODULE.INTERFACE.INCOMING_PACKETS
-local BitStreamIO       = require 'lib.samp.events.bitstream_io'
+local OUTCOMING_RPCS         = MODULE.INTERFACE.OUTCOMING_RPCS
+local OUTCOMING_PACKETS      = MODULE.INTERFACE.OUTCOMING_PACKETS
+local INCOMING_RPCS          = MODULE.INTERFACE.INCOMING_RPCS
+local INCOMING_PACKETS       = MODULE.INTERFACE.INCOMING_PACKETS
+local BitStreamIO            = require 'lib.samp.events.bitstream_io'
 MODULE.INTERFACE.BitStreamIO = BitStreamIO
 
 
