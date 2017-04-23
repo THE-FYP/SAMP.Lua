@@ -426,96 +426,33 @@ INCOMING_RPCS[RPC.SETPLAYERFACINGANGLE] = {'onSetPlayerFacingAngle', {angle = 'f
 INCOMING_RPCS[RPC.RESETPLAYERMONEY]         = {'onResetPlayerMoney'}
 INCOMING_RPCS[RPC.RESETPLAYERWEAPONS]       = {'onResetPlayerWeapons'}
 INCOMING_RPCS[RPC.GIVEPLAYERWEAPON] = {'onGivePlayerWeapon', {weaponId = 'int32'}, {ammo = 'int32'}} -- TODO: test
--- INCOMING_RPCS[RPC.SETVEHICLEPARAMSEX] = {''}
--- INCOMING_RPCS[RPC.CANCELEDIT] = {''}
+-- INCOMING_RPCS[RPC.SETVEHICLEPARAMSEX] = {''} -- TODO: test
 INCOMING_RPCS[RPC.SETPLAYERTIME] = {'onSetWorldTime', {hour = 'int8'}, {minute = 'int8'}} -- TODO: test
--- INCOMING_RPCS[RPC.TOGGLECLOCK] = {''}
 INCOMING_RPCS[RPC.WORLDPLAYERADD]           = {'onPlayerStreamIn', {playerId = 'int16'}, {team = 'int8'}, {model = 'int32'}, {posX = 'float'}, {posY = 'float'}, {posZ = 'float'}, {rotation = 'float'}, {color = 'int32'}, {fightingStyle = 'int8'}}
--- INCOMING_RPCS[RPC.SETPLAYERSHOPNAME] = {''}
--- INCOMING_RPCS[RPC.SETPLAYERSKILLLEVEL] = {''}
 INCOMING_RPCS[RPC.SETPLAYERDRUNKLEVEL] = {'onSetPlayerDrunk', {drunkLevel = 'int32'}} -- TODO: test
 INCOMING_RPCS[RPC.CREATE3DTEXTLABEL]        = {'onCreate3DText', {id = 'int16'}, {color = 'int32'}, {posX = 'float'}, {posY = 'float'}, {posZ = 'float'}, {distance = 'float'}, {testLOS = 'bool8'}, {attachedPlayerId = 'int16'}, {attachedVehicleId = 'int16'}, {text = 'encodedString2048'}}
 INCOMING_RPCS[RPC.DISABLECHECKPOINT] = {'onDisableCheckpoint'} -- TODO: test
 INCOMING_RPCS[RPC.SETRACECHECKPOINT] = {'onSetRaceCheckpoint', {type = 'int8'}, {x = 'float'}, {y = 'float'}, {z = 'float'}, {nextX = 'float'}, {nextY = 'float'}, {nextZ = 'float'}, {size = 'float'}} -- TODO: test
 INCOMING_RPCS[RPC.DISABLERACECHECKPOINT] = {'onDisableRaceCheckpoint'} -- TODO: test
 INCOMING_RPCS[RPC.GAMEMODERESTART] = {'onGamemodeRestart'} -- TODO: test
--- INCOMING_RPCS[RPC.PLAYAUDIOSTREAM] = {''}
--- INCOMING_RPCS[RPC.STOPAUDIOSTREAM] = {''}
--- INCOMING_RPCS[RPC.REMOVEBUILDINGFORPLAYER] = {''}
--- INCOMING_RPCS[RPC.CREATEOBJECT] = {''}
--- INCOMING_RPCS[RPC.SETOBJECTPOS] = {''}
--- INCOMING_RPCS[RPC.SETOBJECTROT] = {''}
--- INCOMING_RPCS[RPC.DESTROYOBJECT] = {''}
--- INCOMING_RPCS[RPC.DEATHMESSAGE] = {''}
--- INCOMING_RPCS[RPC.SETPLAYERMAPICON] = {''}
--- INCOMING_RPCS[RPC.REMOVEVEHICLECOMPONENT] = {''}
--- INCOMING_RPCS[RPC.UPDATE3DTEXTLABEL] = {''}
 INCOMING_RPCS[RPC.CHATBUBBLE]               = {'onPlayerChatBubble', {playerId = 'int16'}, {color = 'int32'}, {distance = 'float'}, {duration = 'int32'}, {message = 'string8'}}
 INCOMING_RPCS[RPC.UPDATETIME]               = {'onUpdateGlobalTimer', {time = 'int32'}}
 INCOMING_RPCS[RPC.SHOWDIALOG]               = {'onShowDialog', {dialogId = 'int16'}, {style = 'int8'}, {title = 'string8'}, {button1 = 'string8'}, {button2 = 'string8'}, {text = 'encodedString2048'}}
 INCOMING_RPCS[RPC.DESTROYPICKUP]            = {'onDestroyPickup', {id = 'int32'}}
--- INCOMING_RPCS[RPC.LINKVEHICLETOINTERIOR] = {''}
--- INCOMING_RPCS[RPC.SETPLAYERARMOUR] = {''}
--- INCOMING_RPCS[RPC.SETPLAYERARMEDWEAPON] = {''}
 INCOMING_RPCS[RPC.SETSPAWNINFO]             = {'onSetSpawnInfo', {team = 'int8'}, {skin = 'int32'}, {unk = 'int8'}, {x = 'float'}, {y = 'float'}, {z = 'float'}, {rotation = 'float'}, {weapons = 'int32arr3'}, {ammo = 'int32arr3'}}
--- INCOMING_RPCS[RPC.SETPLAYERTEAM] = {''}
--- INCOMING_RPCS[RPC.PUTPLAYERINVEHICLE] = {''}
--- INCOMING_RPCS[RPC.REMOVEPLAYERFROMVEHICLE] = {''}
--- INCOMING_RPCS[RPC.SETPLAYERCOLOR] = {''}
 INCOMING_RPCS[RPC.DISPLAYGAMETEXT] = {'onDisplayGameText', {style = 'int32'}, {time = 'int32'}, {text = 'string8'}}
--- INCOMING_RPCS[RPC.FORCECLASSSELECTION] = {''}
--- INCOMING_RPCS[RPC.ATTACHOBJECTTOPLAYER] = {''}
 -- int menuId, string title, float x, float y, bool twoColumns, table columns, table rows, bool menuUnk
 INCOMING_RPCS[RPC.INITMENU]                 = {'onInitMenu', onInitGameReader, onInitMenuWriter}
 INCOMING_RPCS[RPC.SHOWMENU]                 = {'onShowMenu', {menuId = 'int8'}}
 INCOMING_RPCS[RPC.HIDEMENU]                 = {'onHideMenu', {menuId = 'int8'}}
--- INCOMING_RPCS[RPC.CREATEEXPLOSION] = {''}
--- INCOMING_RPCS[RPC.SHOWPLAYERNAMETAGFORPLAYER] = {''}
--- INCOMING_RPCS[RPC.ATTACHCAMERATOOBJECT] = {''}
--- INCOMING_RPCS[RPC.INTERPOLATECAMERA] = {''}
--- INCOMING_RPCS[RPC.SETOBJECTMATERIAL] = {''}
--- INCOMING_RPCS[RPC.GANGZONESTOPFLASH] = {''}
 INCOMING_RPCS[RPC.APPLYANIMATION]           = {'onApplyPlayerAnimation', {playerId = 'int16'}, {animLib = 'string8'}, {animName = 'string8'}, {loop = 'bool'}, {lockX = 'bool'}, {lockY = 'bool'}, {freeze = 'bool'}, {time = 'int32'}}
 INCOMING_RPCS[RPC.CLEARANIMATIONS]          = {'onClearPlayerAnimation', {playerId = 'int16'}}
--- INCOMING_RPCS[RPC.SETPLAYERSPECIALACTION] = {''}
--- INCOMING_RPCS[RPC.SETPLAYERFIGHTINGSTYLE] = {''}
--- INCOMING_RPCS[RPC.SETPLAYERVELOCITY] = {''}
--- INCOMING_RPCS[RPC.SETVEHICLEVELOCITY] = {''}
 INCOMING_RPCS[RPC.CLIENTMESSAGE]            = {'onServerMessage', {color = 'int32'}, {text = 'string32'}}
--- INCOMING_RPCS[RPC.SETWORLDTIME] = {''}
 INCOMING_RPCS[RPC.CREATEPICKUP]             = {'onCreatePickup', {id = 'int32'}, {model = 'int32'}, {pickupType = 'int32'}, {posX = 'float'}, {posY = 'float'}, {posZ = 'float'}}
--- INCOMING_RPCS[RPC.MOVEOBJECT] = {''}
--- INCOMING_RPCS[RPC.ENABLESTUNTBONUSFORPLAYER] = {''}
--- INCOMING_RPCS[RPC.TEXTDRAWSETSTRING] = {''}
--- INCOMING_RPCS[RPC.SETCHECKPOINT] = {''}
--- INCOMING_RPCS[RPC.GANGZONECREATE] = {''}
--- INCOMING_RPCS[RPC.PLAYCRIMEREPORT] = {''}
--- INCOMING_RPCS[RPC.SETPLAYERATTACHEDOBJECT] = {''}
--- INCOMING_RPCS[RPC.GANGZONEDESTROY] = {''}
--- INCOMING_RPCS[RPC.GANGZONEFLASH] = {''}
--- INCOMING_RPCS[RPC.STOPOBJECT] = {''}
--- INCOMING_RPCS[RPC.SETNUMBERPLATE] = {''}
--- INCOMING_RPCS[RPC.TOGGLEPLAYERSPECTATING] = {''}
--- INCOMING_RPCS[RPC.PLAYERSPECTATEPLAYER] = {''}
--- INCOMING_RPCS[RPC.PLAYERSPECTATEVEHICLE] = {''}
--- INCOMING_RPCS[RPC.SETPLAYERWANTEDLEVEL] = {''}
--- INCOMING_RPCS[RPC.SHOWTEXTDRAW] = {''}
--- INCOMING_RPCS[RPC.TEXTDRAWHIDEFORPLAYER] = {''}
--- INCOMING_RPCS[RPC.REMOVEPLAYERMAPICON] = {''}
--- INCOMING_RPCS[RPC.SETPLAYERAMMO] = {''}
+INCOMING_RPCS[RPC.SHOWTEXTDRAW] = {'onShowTextDraw', {textDrawId = 'int16'}, {flags = 'int8'}, {letterWidth = 'float'}, {letterHeight = 'float'}, {letterColor = 'int32'}, {lineWidth = 'float'}, {lineHeight = 'float'}, {boxColor = 'int32'}, {shadow = 'int8'},
 INCOMING_RPCS[RPC.SETGRAVITY]               = {'onSetGravity', {gravity = 'float'}}
 INCOMING_RPCS[RPC.SETVEHICLEHEALTH]         = {'onSetVehicleHealth', {vehicleId = 'int16'}, {health = 'float'}}
--- INCOMING_RPCS[RPC.ATTACHTRAILERTOVEHICLE] = {''}
--- INCOMING_RPCS[RPC.DETACHTRAILERFROMVEHICLE] = {''}
--- INCOMING_RPCS[RPC.SETWEATHER] = {''}
--- INCOMING_RPCS[RPC.SETPLAYERSKIN] = {''}
 INCOMING_RPCS[RPC.SETPLAYERINTERIOR]        = {'onSetInterior', {interior = 'int8'}}
--- INCOMING_RPCS[RPC.SETPLAYERCAMERAPOS] = {''}
--- INCOMING_RPCS[RPC.SETPLAYERCAMERALOOKAT] = {''}
--- INCOMING_RPCS[RPC.SETVEHICLEPOS] = {''}
--- INCOMING_RPCS[RPC.SETVEHICLEZANGLE] = {''}
--- INCOMING_RPCS[RPC.SETVEHICLEPARAMSFORPLAYER] = {''}
--- INCOMING_RPCS[RPC.SETCAMERABEHINDPLAYER] = {''}
 INCOMING_RPCS[RPC.CHAT]                     = {'onChatMessage', {playerId = 'int16'}, {text = 'string8'}}
 INCOMING_RPCS[RPC.CONNECTIONREJECTED]       = {'onConnectionRejected', {reason = 'int8'}}
 INCOMING_RPCS[RPC.WORLDPLAYERREMOVE]        = {'onPlayerStreamOut', {playerId = 'int16'}}
@@ -576,6 +513,17 @@ BitStreamIO.int32arr3 = {
 	end,
 	write = function(bs, value)
 		for i = 1, 3 do raknetBitStreamWriteInt32(bs, value[i]) end
+	end
+}
+
+BitStreamIO.vector2d = {
+	read = function(bs)
+		local arr = {}
+		for i = 1, 2 do arr[i] = raknetBitStreamReadInt32(bs) end
+		return arr
+	end,
+	write = function(bs, value)
+		for i = 1, 2 do raknetBitStreamWriteInt32(bs, value[i]) end
 	end
 }
 
