@@ -1,3 +1,9 @@
+-- This file is part of the SAMP.Lua project.
+-- Licensed under the MIT License.
+-- Copyright (c) 2016, FYP @ BlastHack Team <blast.hk>
+-- https://github.com/THE-FYP/SAMP.Lua
+
+
 local BitStreamIO = {}
 
 BitStreamIO.bool = {
@@ -173,6 +179,17 @@ BitStreamIO.vector3d = {
 	end
 }
 
+BitStreamIO.vector2d = {
+	read = function(bs)
+		local x = raknetBitStreamReadFloat(bs)
+		local y = raknetBitStreamReadFloat(bs)
+		return {x = x, y = y}
+	end,
+	write = function(bs, value)
+		raknetBitStreamWriteFloat(bs, value.x)
+		raknetBitStreamWriteFloat(bs, value.y)
+	end
+}
 
 function bitstream_io_interface(field)
 	return setmetatable({}, {

@@ -1,3 +1,9 @@
+-- This file is part of the SAMP.Lua project.
+-- Licensed under the MIT License.
+-- Copyright (c) 2016, FYP @ BlastHack Team <blast.hk>
+-- https://github.com/THE-FYP/SAMP.Lua
+
+
 local utils = {}
 
 function utils.decompress_health_and_armor(hpAp)
