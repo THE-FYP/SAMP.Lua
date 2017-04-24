@@ -212,7 +212,7 @@ end
 --- onPlayerSync
 function handler.on_player_sync_reader(bs)
 	local has_value = raknetBitStreamReadBool
-	local read = BitStreamIO.bs_write
+	local read = BitStreamIO.bs_read
 	local data = {}
 	local playerId = raknetBitStreamReadInt16(bs)
 	if has_value(bs) then data.leftRightKeys = raknetBitStreamReadInt16(bs) end
