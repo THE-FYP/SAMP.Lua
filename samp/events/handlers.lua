@@ -178,14 +178,15 @@ end
 
 --- onMarkersSync
 function handler.on_markers_sync_reader(bs)
+	local read = BitStreamIO.bs_read
 	local markers = {}
-	local players = raknetBitStreamReadInt32(bs)
+	local players = read.int32(bs)
 	for i = 1, players do
-		local playerId = raknetBitStreamReadInt16(bs)
-		local active = raknetBitStreamReadBool(bs)
+		local playerId = read.int16(bs)
+		local active = read.bool(bs)
 		if active then
 			local Vector3D = require 'lib.vector3d'
-			local x, y, z = raknetBitStreamReadInt16(bs), raknetBitStreamReadInt16(bs), raknetBitStreamReadInt16(bs)
+			local x, y, z = read.int16(bs), read.int16(bs), read.int16(bs)
 			table.insert(markers, {playerId = playerId, active = true, coords = Vector3D(x, y, z)})
 		else
 			table.insert(markers, {playerId = playerId, active = false})
@@ -195,15 +196,16 @@ function handler.on_markers_sync_reader(bs)
 end
 
 function handler.on_markers_sync_writer(bs, data)
-	raknetBitStreamWriteInt32(bs, #data)
+	local write = BitStreamIO.bs_write
+	write.int32(bs, #data)
 	for i = 1, #data do
 		local it = data[i]
-		raknetBitStreamWriteInt16(bs, it.playerId)
-		raknetBitStreamWriteBool(bs, it.active)
+		write.int16(bs, it.playerId)
+		write.bool(bs, it.active)
 		if it.active then
-			raknetBitStreamWriteInt16(bs, it.coords.x)
-			raknetBitStreamWriteInt16(bs, it.coords.y)
-			raknetBitStreamWriteInt16(bs, it.coords.z)
+			write.int16(bs, it.coords.x)
+			write.int16(bs, it.coords.y)
+			write.int16(bs, it.coords.z)
 		end
 	end
 end
@@ -211,26 +213,26 @@ end
 
 --- onPlayerSync
 function handler.on_player_sync_reader(bs)
-	local has_value = raknetBitStreamReadBool
+	local has_value = read.bool
 	local read = BitStreamIO.bs_read
 	local data = {}
-	local playerId = raknetBitStreamReadInt16(bs)
-	if has_value(bs) then data.leftRightKeys = raknetBitStreamReadInt16(bs) end
-	if has_value(bs) then data.upDownKeys = raknetBitStreamReadInt16(bs) end
-	data.keysData = raknetBitStreamReadInt16(bs)
+	local playerId = read.int16(bs)
+	if has_value(bs) then data.leftRightKeys = read.int16(bs) end
+	if has_value(bs) then data.upDownKeys = read.int16(bs) end
+	data.keysData = read.int16(bs)
 	data.position = read.vector3d(bs)
 	data.quaternion = read.normQuat(bs)
-	data.health, data.armor = utils.decompress_health_and_armor(raknetBitStreamReadInt8(bs))
-	data.weapon = raknetBitStreamReadInt8(bs)
-	data.specialAction = raknetBitStreamReadInt8(bs)
+	data.health, data.armor = utils.decompress_health_and_armor(read.int8(bs))
+	data.weapon = read.int8(bs)
+	data.specialAction = read.int8(bs)
 	data.moveSpeed = read.compressedVector(bs)
 	if has_value(bs) then
-		data.surfingVehicleId = raknetBitStreamReadInt16(bs)
+		data.surfingVehicleId = rend.int16(bs)
 		data.surfingOffsets = read.vector3d(bs)
 	end
 	if has_value(bs) then
-		data.animationId = raknetBitStreamReadInt16(bs)
-		data.animationFlags = raknetBitStreamReadInt16(bs)
+		data.animationId = read.int16(bs)
+		data.animationFlags = read.int16(bs)
 	end
 	return {playerId, data}
 end
@@ -239,27 +241,27 @@ function handler.on_player_sync_writer(bs, data)
 	local write = BitStreamIO.bs_write
 	local playerId = data[1]
 	local data = data[2]
-	raknetBitStreamWriteInt16(bs, playerId)
-	raknetBitStreamWriteBool(bs, data.leftRightKeys ~= nil)
-	if data.leftRightKeys then raknetBitStreamWriteInt16(bs, data.leftRightKeys) end
-	raknetBitStreamWriteBool(bs, data.upDownKeys ~= nil)
-	if data.upDownKeys then raknetBitStreamWriteInt16(bs, data.upDownKeys) end
-	raknetBitStreamWriteInt16(bs, data.keysData)
+	write.int16(bs, playerId)
+	write.bool(bs, data.leftRightKeys ~= nil)
+	if data.leftRightKeys then write.int16(bs, data.leftRightKeys) end
+	write.bool(bs, data.upDownKeys ~= nil)
+	if data.upDownKeys then write.int16(bs, data.upDownKeys) end
+	write.int16(bs, data.keysData)
 	write.vector3d(bs, data.position)
 	write.normQuat(bs, data.quaternion)
-	raknetBitStreamWriteInt8(bs, utils.compress_health_and_armor(data.health, data.armor))
-	raknetBitStreamWriteInt8(bs, data.weapon)
-	raknetBitStreamWriteInt8(bs, data.specialAction)
+	write.int8(bs, utils.compress_health_and_armor(data.health, data.armor))
+	write.int8(bs, data.weapon)
+	write.int8(bs, data.specialAction)
 	write.compressedVector(bs, data.moveSpeed)
-	raknetBitStreamWriteBool(bs, data.surfingVehicleId ~= nil)
+	write.bool(bs, data.surfingVehicleId ~= nil)
 	if data.surfingVehicleId then
-		raknetBitStreamWriteInt16(bs, data.surfingVehicleId)
+		write.int16(bs, data.surfingVehicleId)
 		write.vector3d(bs, data.surfingOffsets)
 	end
-	raknetBitStreamWriteBool(bs, data.animationId ~= nil)
+	write.bool(bs, data.animationId ~= nil)
 	if data.animationId then
-		raknetBitStreamWriteInt16(bs, data.animationId)
-		raknetBitStreamWriteInt16(bs, data.animationFlags)
+		write.int16(bs, data.animationId)
+		write.int16(bs, data.animationFlags)
 	end
 end
 
@@ -268,24 +270,24 @@ end
 function handler.on_vehicle_sync_reader(bs)
 	local read = BitStreamIO.bs_read
 	local data = {}
-	local playerId = raknetBitStreamReadInt16(bs)
-	local vehicleId = raknetBitStreamReadInt16(bs)
-	data.leftRightKeys = raknetBitStreamReadInt16(bs)
-	data.upDownKeys = raknetBitStreamReadInt16(bs)
-	data.keysData = raknetBitStreamReadInt16(bs)
+	local playerId = read.int16(bs)
+	local vehicleId = read.int16(bs)
+	data.leftRightKeys = read.int16(bs)
+	data.upDownKeys = read.int16(bs)
+	data.keysData = read.int16(bs)
 	data.quaternion = read.normQuat(bs)
 	data.position = read.vector3d(bs)
 	data.moveSpeed = read.compressedVector(bs)
-	data.vehicleHealth = raknetBitStreamReadInt16(bs)
-	data.playerHealth, data.armor = utils.decompress_health_and_armor(raknetBitStreamReadInt8(bs))
-	data.currentWeapon = raknetBitStreamReadInt8(bs)
-	data.siren = raknetBitStreamReadBool(bs)
-	data.landingGear = raknetBitStreamReadBool(bs)
-	if raknetBitStreamReadBool(bs) then
-		data.trainSpeed = raknetBitStreamReadInt32(bs)
+	data.vehicleHealth = read.int16(bs)
+	data.playerHealth, data.armor = utils.decompress_health_and_armor(read.int8(bs))
+	data.currentWeapon = read.int8(bs)
+	data.siren = read.bool(bs)
+	data.landingGear = read.bool(bs)
+	if read.bool(bs) then
+		data.trainSpeed = read.int32(bs)
 	end
-	if raknetBitStreamReadBool(bs) then
-		data.trailerId = raknetBitStreamReadInt16(bs)
+	if read.bool(bs) then
+		data.trailerId = read.int16(bs)
 	end
 	return {playerId, vehicleId, data}
 end
@@ -295,27 +297,128 @@ function handler.on_vehicle_sync_writer(bs, data)
 	local playerId = data[1]
 	local vehicleId = data[2]
 	local data = data[3]
-	raknetBitStreamWriteInt16(bs, playerId)
-	raknetBitStreamWriteInt16(bs, vehicleId)
-	raknetBitStreamWriteInt16(bs, data.leftRightKeys)
-	raknetBitStreamWriteInt16(bs, data.upDownKeys)
-	raknetBitStreamWriteInt16(bs, data.keysData)
+	write.int16(bs, playerId)
+	write.int16(bs, vehicleId)
+	write.int16(bs, data.leftRightKeys)
+	write.int16(bs, data.upDownKeys)
+	write.int16(bs, data.keysData)
 	write.normQuat(bs, data.quaternion)
 	write.vector3d(bs, data.position)
 	write.compressedVector(bs, data.moveSpeed)
-	raknetBitStreamWriteInt16(bs, data.vehicleHealth)
-	raknetBitStreamWriteInt8(bs, utils.compress_health_and_armor(data.playerHealth, data.armor))
-	raknetBitStreamWriteInt8(bs, data.currentWeapon)
-	raknetBitStreamWriteBool(bs, data.siren)
-	raknetBitStreamWriteBool(bs, data.landingGear)
-	raknetBitStreamWriteBool(bs, data.trainSpeed ~= nil)
+	write.int16(bs, data.vehicleHealth)
+	write.int8(bs, utils.compress_health_and_armor(data.playerHealth, data.armor))
+	write.int8(bs, data.currentWeapon)
+	write.bool(bs, data.siren)
+	write.bool(bs, data.landingGear)
+	write.bool(bs, data.trainSpeed ~= nil)
 	if data.trainSpeed ~= nil then
-		raknetBitStreamWriteInt32(bs, data.trainSpeed)
+		write.int32(bs, data.trainSpeed)
 	end
-	raknetBitStreamWriteBool(bs, data.trailerId ~= nil)
+	write.bool(bs, data.trailerId ~= nil)
 	if data.trailerId ~= nil then
-		raknetBitStreamWriteInt16(bs, data.trailerId)
+		write.int16(bs, data.trailerId)
 	end
+end
+
+
+--- onVehicleSteamIn
+function handler.on_vehicle_stream_in_reader(bs)
+	local read = BitStreamIO.bs_read
+	local data = {modSlots = {}}
+	local vehicleId = read.int16(bs)
+	data.type = read.int32(bs)
+	data.position = read.vector3d(bs)
+	data.rotation = read.float(bs)
+	data.interiorColor1 = read.int8(bs)
+	data.interiorColor2 = read.int8(bs)
+	data.health = read.float(bs)
+	data.interiorId = read.int8(bs)
+	data.doorDamageStatus = read.int32(bs)
+	data.panelDamageStatus = read.int32(bs)
+	data.lightDamageStatus = read.int8(bs)
+	data.tireDamageStatus = read.int8(bs)
+	data.addSiren = read.int8(bs)
+	for i = 1, 14 do data.modSlots[i] = read.int8(bs) end --- fix it
+	data.paintJob = read.int8(bs)
+	data.bodyColor1 = read.int32(bs)
+	data.bodyColor2 = read.int32(bs)
+	data.unk = read.int8(bs)
+	return {vehicleId, data}
+end
+
+function handler.on_vehicle_stream_in_writer(bs, data)
+	local write = BitStreamIO.bs_write
+	local vehicleId = data[1]
+	local data = data[2]
+	write.int16(bs, vehicleId)
+	write.int32(bs, data.type)
+	write.vector3d(bs, data.position)
+	write.float(bs, data.rotation)
+	write.int8(bs, data.interiorColor1)
+	write.int8(bs, data.interiorColor2)
+	write.float(bs, data.health)
+	write.int8(bs, data.interiorId)
+	write.int32(bs, data.doorDamageStatus)
+	write.int32(bs, data.panelDamageStatus)
+	write.int8(bs, data.lightDamageStatus)
+	write.int8(bs, data.tireDamageStatus)
+	write.int8(bs, data.addSiren)
+	for i = 1, 14 do write.int8(bs, data.modSlots[i]) end --- fix it
+	write.int8(bs, data.paintJob)
+	write.int32(bs, data.bodyColor1)
+	write.int32(bs, data.bodyColor2)
+	write.int8(bs, data.unk)
+end
+
+
+--- onShowTextDraw
+function handler.on_show_textdraw_reader(bs)
+	local read = BitStreamIO.bs_read
+	local data = {}
+	local textdrawId = read.int16(bs)
+	data.flags = read.int8(bs)
+	data.letterWidth = read.float(bs)
+	data.letterHeight = read.float(bs)
+	data.letterColor = read.int32(bs)
+	data.lineWidth = read.float(bs)
+	data.lineHeight = read.float(bs)
+	data.boxColor = read.int32(bs)
+	data.shadow = read.int8(bs)
+	data.outline = read.int8(bs)
+	data.backgroundColor = read.int32(bs)
+	data.style = read.int8(bs)
+	data.selectable = read.int8(bs)
+	data.position = read.vector2d(bs)
+	data.modelId = read.int16(bs)
+	data.rotation = read.vector3d(bs)
+	data.zoom = read.float(bs)
+	data.color = read.int32(bs)
+	data.text = read.string16(bs)
+	return {textdrawId, data}
+end
+
+function handler.on_show_textdraw_writer(bs, data)
+	local write = BitStreamIO.bs_write
+	local textdrawId = data[1]
+	local data = data[2]
+	write.int16(bs, textdrawId)
+	write.int8(bs, data.flags)
+	write.float(bs, data.letterWidth)
+	write.float(bs, data.letterHeight)
+	write.int32(bs, data.letterColor)
+	write.float(bs, data.lineWidth)
+	write.float(bs, data.lineHeight)
+	write.int32(bs, data.boxColor)
+	write.int8(bs, data.shadow)
+	write.int8(bs, data.outline)
+	write.int32(bs, data.backgroundColor)
+	write.int8(bs, data.selectable)
+	write.vector2d(bs, data.position)
+	write.int16(bs, data.modelId)
+	write.vector3d(bs, data.rotation)
+	write.float(bs, data.zoom)
+	write.int32(bs, data.color)
+	write.string16(bs, data.text)
 end
 
 return handler

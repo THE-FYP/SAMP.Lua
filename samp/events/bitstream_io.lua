@@ -44,6 +44,18 @@ BitStreamIO.string8 = {
 	end
 }
 
+BitStreamIO.string16 = {
+	read = function(bs)
+		local len = raknetBitStreamReadInt16(bs)
+		if len <= 0 then return '' end
+		return raknetBitStreamReadString(bs, len)
+	end,
+	write = function(bs, value)
+		raknetBitStreamReadInt16(bs, #value)
+		raknetBitStreamWriteString(bs, value)
+	end
+}
+
 BitStreamIO.string32 = {
 	read = function(bs)
 		local len = raknetBitStreamReadInt32(bs)

@@ -55,15 +55,15 @@ OUTCOMING_RPCS[RPC.GIVETAKEDAMAGE]            = {
 
 -- Incoming rpcs
 -- int playerId, string hostName, table settings, table vehicleModels, int unknown
-INCOMING_RPCS[RPC.INITGAME]                   = {'onInitGame', handler.on_init_game_reader, handler.on_init_game_writer}
-INCOMING_RPCS[RPC.SERVERJOIN]                 = {'onPlayerJoin', {playerId = 'int16'}, {color = 'int32'}, {isNpc = 'bool8'}, {nickname = 'string8'}}
+INCOMING_RPCS[RPC.INITGAME]                   = {'onInitGame', handler.on_init_game_reader, handler.on_init_game_writer} -- tested
+INCOMING_RPCS[RPC.SERVERJOIN]                 = {'onPlayerJoin', {playerId = 'int16'}, {color = 'int32'}, {isNpc = 'bool8'}, {nickname = 'string8'}} -- tested
 INCOMING_RPCS[RPC.SERVERQUIT]                 = {'onPlayerQuit', {playerId = 'int16'}, {reason = 'int8'}}
-INCOMING_RPCS[RPC.REQUESTCLASS]               = {'onRequestClassResponse', {canSpawn = 'bool8'}, {team = 'int8'}, {skin = 'int32'}, {unk = 'int8'}, {positon = 'vector3d'}, {rotation = 'float'}, {weapons = 'Int32Array3'}, {ammo = 'Int32Array3'}}
-INCOMING_RPCS[RPC.REQUESTSPAWN]               = {'onRequestSpawnResponse', {response = 'bool8'}}
+INCOMING_RPCS[RPC.REQUESTCLASS]               = {'onRequestClassResponse', {canSpawn = 'bool8'}, {team = 'int8'}, {skin = 'int32'}, {unk = 'int8'}, {positon = 'vector3d'}, {rotation = 'float'}, {weapons = 'Int32Array3'}, {ammo = 'Int32Array3'}} -- tested
+INCOMING_RPCS[RPC.REQUESTSPAWN]               = {'onRequestSpawnResponse', {response = 'bool8'}} -- tested
 INCOMING_RPCS[RPC.SETPLAYERNAME]              = {'onSetPlayerName', {name = 'string8'}} -- TODO: test
-INCOMING_RPCS[RPC.SETPLAYERPOS]               = {'onSetPlayerPos', {position = 'vector3d'}}
+INCOMING_RPCS[RPC.SETPLAYERPOS]               = {'onSetPlayerPos', {position = 'vector3d'}} -- tested
 INCOMING_RPCS[RPC.SETPLAYERPOSFINDZ]          = {'onSetPlayerPosFindZ', {position = 'vector3d'}} -- TODO: test
-INCOMING_RPCS[RPC.SETPLAYERHEALTH]            = {'onSetPlayerHealth', {health = 'float'}}
+INCOMING_RPCS[RPC.SETPLAYERHEALTH]            = {'onSetPlayerHealth', {health = 'float'}} -- tested
 INCOMING_RPCS[RPC.TOGGLEPLAYERCONTROLLABLE]   = {'onTogglePlayerControllable', {controllable = 'bool8'}}
 INCOMING_RPCS[RPC.PLAYSOUND]                  = {'onPlaySound', {soundId = 'int32'}, {position = 'vector3d'}} -- TODO: test
 INCOMING_RPCS[RPC.SETPLAYERWORLDBOUNDS]       = {'onSetWorldBounds', {squareStart = 'vector2d'}, {squareEnd = 'vector2d'}} -- TODO: test
@@ -145,8 +145,7 @@ INCOMING_RPCS[RPC.TOGGLEPLAYERSPECTATING]     = {'onTogglePlayerSpectating', {st
 INCOMING_RPCS[RPC.PLAYERSPECTATEPLAYER]       = {'onSpectatePlayer', {playerId = 'int16'}, {camType = 'int8'}} -- TODO: test
 INCOMING_RPCS[RPC.PLAYERSPECTATEVEHICLE]      = {'onSpectateVehicle', {vehicleId = 'int16'}, {camType = 'int8'}} -- TODO: test
 INCOMING_RPCS[RPC.SETPLAYERWANTEDLEVEL]       = {'onSetPlayerWantedLevel', {wantedLevel = 'int8'}} -- TODO: test
-INCOMING_RPCS[RPC.SHOWTEXTDRAW]               = {'onShowTextDraw', {textDrawId = 'int16'}, {flags = 'int8'}, {letterWidth = 'float'}, {letterHeight = 'float'}, {letterColor = 'int32'}, {lineWidth = 'float'}, {lineHeight = 'float'}, {boxColor = 'int32'}, {shadow = 'int8'},
-{outline                                      = 'int8'}, {backgroundColor = 'int32'}, {style = 'int8'}, {selectable = 'int8'}, {position = 'vector2d'}, {modelId = 'int16'}, {rotation = 'vector3d'}, {zoom = 'float'}, {color1 = 'int16'}, {color2 = 'int16'}, {text = 'string32'}} -- TODO: test - skip
+INCOMING_RPCS[RPC.SHOWTEXTDRAW]               = {'onShowTextDraw', handler.on_show_textdraw_reader, handler.on_show_textdraw_writer} -- TODO: test - skip
 INCOMING_RPCS[RPC.TEXTDRAWHIDEFORPLAYER]      = {'onTextDrawHide', {textDrawId = 'int16'}} -- TODO: test
 INCOMING_RPCS[RPC.REMOVEPLAYERMAPICON]        = {'onRemoveMapIcon', {iconId = 'int8'}} -- TODO: test
 INCOMING_RPCS[RPC.SETPLAYERAMMO]              = {'onSetWeaponAmmo', {weaponId = 'int8'}, {bullets = 'int16'}} -- TODO: test
@@ -166,7 +165,7 @@ INCOMING_RPCS[RPC.SETCAMERABEHINDPLAYER]      = {'onSetCameraBehind'} -- TODO: t
 INCOMING_RPCS[RPC.CHAT]                       = {'onChatMessage', {playerId = 'int16'}, {text = 'string8'}}
 INCOMING_RPCS[RPC.CONNECTIONREJECTED]         = {'onConnectionRejected', {reason = 'int8'}}
 INCOMING_RPCS[RPC.WORLDPLAYERREMOVE]          = {'onPlayerStreamOut', {playerId = 'int16'}}
-INCOMING_RPCS[RPC.WORLDVEHICLEADD]            = {'onVehicleStreamIn', {vehicleId = 'int16'}, {model = 'int32'}, {position = 'vector3d'}, {rotation = 'float'}, {color1 = 'int8'}, {color2 = 'int8'}, {health = 'float'}, {interior = 'int8'}, {locked = 'bool8'}, {panelDamage = 'int32'}, {doorDamage = 'int32'}, {lightsDamage = 'int8'}, {tiresDamage = 'int8'}} -- TODO: Update
+INCOMING_RPCS[RPC.WORLDVEHICLEADD]            = {'onVehicleStreamIn', handler.on_vehicle_stream_in_reader, handler.on_vehicle_stream_in_writer} -- TODO: Update
 INCOMING_RPCS[RPC.WORLDVEHICLEREMOVE]         = {'onVehicleStreamOut', {vehicleId = 'int16'}}
 INCOMING_RPCS[RPC.WORLDPLAYERDEATH]           = {'onPlayerDeath', {playerId = 'int16'}}
 INCOMING_RPCS[RPC.ENTERVEHICLE]               = {'onPlayerEnterVehicle', {playerId = 'int16'}, {vehicleId = 'int16'}, {passenger = 'bool8'}}
