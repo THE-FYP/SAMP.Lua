@@ -43,4 +43,11 @@ function utils.write_sync_data(bs, type, ffiobj)
 	raknetBitStreamWriteBuffer(bs, tonumber(ffi.cast('intptr_t', ffiobj)), ffi.sizeof('struct ' .. type))
 end
 
+function utils.process_outcoming_sync_data(bs, structName)
+	local data = raknetBitStreamGetDataPtr(bs) + 1
+	local ffi = require 'ffi'
+	require 'lib.samp.synchronization'
+	return {ffi.cast('struct ' .. structName .. '*', data)}
+end
+
 return utils

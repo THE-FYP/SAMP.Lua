@@ -23,10 +23,6 @@ assert(isSampLoaded(), 'SA:MP is not loaded')
 assert(isSampfuncsLoaded(), 'samp.events requires SAMPFUNCS')
 assert(getMoonloaderVersion() >= 20, 'samp.events requires MoonLoader v.020 or greater')
 
-local OUTCOMING_RPCS         = MODULE.INTERFACE.OUTCOMING_RPCS
-local OUTCOMING_PACKETS      = MODULE.INTERFACE.OUTCOMING_PACKETS
-local INCOMING_RPCS          = MODULE.INTERFACE.INCOMING_RPCS
-local INCOMING_PACKETS       = MODULE.INTERFACE.INCOMING_PACKETS
 local BitStreamIO            = require 'lib.samp.events.bitstream_io'
 MODULE.INTERFACE.BitStreamIO = BitStreamIO
 
@@ -94,20 +90,21 @@ local function process_packet(id, bs, event_table, ignorebits)
 end
 
 
+local interface = MODULE.INTERFACE
 local function samp_on_send_rpc(id, bitStream, priority, reliability, orderingChannel, shiftTs)
-	if process_packet(id, bitStream, OUTCOMING_RPCS) == false then return false end
+	if process_packet(id, bitStream, interface.OUTCOMING_RPCS) == false then return false end
 end
 
 local function samp_on_send_packet(id, bitStream, priority, reliability, orderingChannel)
-	if process_packet(id, bitStream, OUTCOMING_PACKETS, 8) == false then return false end
+	if process_packet(id, bitStream, interface.OUTCOMING_PACKETS, 8) == false then return false end
 end
 
 local function samp_on_receive_rpc(id, bitStream)
-	if process_packet(id, bitStream, INCOMING_RPCS) == false then return false end
+	if process_packet(id, bitStream, interface.INCOMING_RPCS) == false then return false end
 end
 
 local function samp_on_receive_packet(id, bitStream)
-	if process_packet(id, bitStream, INCOMING_PACKETS, 8) == false then return false end
+	if process_packet(id, bitStream, interface.INCOMING_PACKETS, 8) == false then return false end
 end
 
 addEventHandler('onSendRpc', samp_on_send_rpc)

@@ -4,6 +4,7 @@
 -- https://github.com/THE-FYP/SAMP.Lua
 
 
+local Vector3D = require 'lib.vector3d'
 local BitStreamIO = {}
 
 BitStreamIO.bool = {
@@ -121,13 +122,13 @@ BitStreamIO.compressedVector = {
 		local magnitude = raknetBitStreamReadFloat(bs)
 		if magnitude ~= 0 then
 			local readCf = BitStreamIO.compressedFloat.read
-			return {readCf(bs) * magnitude, readCf(bs) * magnitude, readCf(bs) * magnitude}
+			return Vector3D(readCf(bs) * magnitude, readCf(bs) * magnitude, readCf(bs) * magnitude)
 		else
-			return {0, 0, 0}
+			return Vector3D(0, 0, 0)
 		end
 	end,
 	write = function(bs, data)
-		local x, y, z = data[1], data[2], data[3]
+		local x, y, z = data.x, data.y, data.z
 		local magnitude = math.sqrt(x * x + y * y + z * z)
 		raknetBitStreamWriteFloat(bs, magnitude)
 		if magnitude > 0 then
@@ -171,7 +172,6 @@ BitStreamIO.normQuat = {
 
 BitStreamIO.vector3d = {
 	read = function(bs)
-		local Vector3D = require 'lib.vector3d'
 		return {Vector3D(raknetBitStreamReadFloat(bs), raknetBitStreamReadFloat(bs), raknetBitStreamReadFloat(bs))}
 	end,
 	write = function(bs, value)
