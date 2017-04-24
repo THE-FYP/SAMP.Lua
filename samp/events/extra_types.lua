@@ -5,6 +5,7 @@
 
 
 local BitStreamIO = require 'lib.samp.events.bitstream_io'
+local utils = require 'lib.samp.events.utils'
 
 BitStreamIO.PlayerScorePingMap = {
 	read = function(bs)
