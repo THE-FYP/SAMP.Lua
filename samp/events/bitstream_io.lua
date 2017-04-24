@@ -172,10 +172,16 @@ BitStreamIO.normQuat = {
 
 BitStreamIO.vector3d = {
 	read = function(bs)
-		return {Vector3D(raknetBitStreamReadFloat(bs), raknetBitStreamReadFloat(bs), raknetBitStreamReadFloat(bs))}
+		local x, y, z =
+			raknetBitStreamReadFloat(bs),
+			raknetBitStreamReadFloat(bs),
+			raknetBitStreamReadFloat(bs)
+		return Vector3D(x, y, z)
 	end,
 	write = function(bs, value)
-		raknetBitStreamWriteFloat(bs, value.x, value.y, value.z)
+		raknetBitStreamWriteFloat(bs, value.x)
+		raknetBitStreamWriteFloat(bs, value.y)
+		raknetBitStreamWriteFloat(bs, value.z)
 	end
 }
 
