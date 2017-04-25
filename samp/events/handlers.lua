@@ -115,13 +115,11 @@ function handler.on_init_menu_reader(bs)
 	local columns = {}
 
 	local readColumn = function(width)
-		local id = #columns + 1
 		local title = read.string256(bs)
 		local rowCount = read.int8(bs)
 		local column = {title = title, width = width, text = {}}
 		for i = 1, rowCount do
-			local text = read.string256(bs)
-			columns[id].text[i] = text
+			column.text[i] = read.string256(bs)
 		end
 		return column
 	end
