@@ -72,7 +72,6 @@ INCOMING_RPCS[RPC.SETPLAYERFACINGANGLE]       = {'onSetPlayerFacingAngle', {angl
 INCOMING_RPCS[RPC.RESETPLAYERMONEY]           = {'onResetPlayerMoney'}
 INCOMING_RPCS[RPC.RESETPLAYERWEAPONS]         = {'onResetPlayerWeapons'}
 INCOMING_RPCS[RPC.GIVEPLAYERWEAPON]           = {'onGivePlayerWeapon', {weaponId = 'int32'}, {ammo = 'int32'}}
--- INCOMING_RPCS[RPC.SETVEHICLEPARAMSEX] = {''} -- TODO: test
 INCOMING_RPCS[RPC.CANCELEDIT]                 = {'onCancelEdit'}
 INCOMING_RPCS[RPC.SETPLAYERTIME]              = {'onSetPlayerTime', {hour = 'int8'}, {minute = 'int8'}}
 INCOMING_RPCS[RPC.TOGGLECLOCK]                = {'onSetToggleClock', {state = 'bool8'}}
@@ -170,6 +169,31 @@ INCOMING_RPCS[RPC.WORLDVEHICLEREMOVE]         = {'onVehicleStreamOut', {vehicleI
 INCOMING_RPCS[RPC.WORLDPLAYERDEATH]           = {'onPlayerDeath', {playerId = 'int16'}}
 INCOMING_RPCS[RPC.ENTERVEHICLE]               = {'onPlayerEnterVehicle', {playerId = 'int16'}, {vehicleId = 'int16'}, {passenger = 'bool8'}}
 INCOMING_RPCS[RPC.UPDATESCORESPINGSIPS]       = {'onUpdateScoresAndPings', {playerList = 'PlayerScorePingMap'}}
+INCOMING_RPCS[RPC.SETVEHICLEPARAMSEX]         = {'onSetVehicleParamsEx',
+  {vehicleId = 'int16'},
+  {params = {
+    {engine = 'bool8'},
+    {lights = 'bool8'},
+    {alarm = 'bool8'},
+    {doors = 'bool8'},
+    {bonnet = 'bool8'},
+    {boot = 'bool8'},
+    {objective = 'bool8'},
+    {unknown = 'bool8'}
+  }},
+  {doors = {
+    {driver = 'bool8'},
+    {passenger = 'bool8'},
+    {backleft = 'bool8'},
+    {backright = 'bool8'}
+  }},
+  {windows = {
+    {driver = 'bool8'},
+    {passenger = 'bool8'},
+    {backleft = 'bool8'},
+    {backright = 'bool8'}
+  }}
+}
 
 -- Outgoing packets
 OUTCOMING_PACKETS[PACKET.RCON_COMMAND]        = {'onSendRconCommand', {command = 'string32'}}
