@@ -27,6 +27,30 @@ local BitStreamIO            = require 'lib.samp.events.bitstream_io'
 MODULE.INTERFACE.BitStreamIO = BitStreamIO
 
 
+local function read_data(bs, dataType)
+	if type(dataType) ~= 'table' then
+		return BitStreamIO[dataType].read(bs)
+	else -- process nested structures
+		local values = {}
+		for _, it in ipairs(dataType) do
+			local name, t = next(it)
+			values[name] = read_data(bs, t)
+		end
+		return values
+	end
+end
+
+local function write_data(bs, dataType, value)
+	if type(dataType) ~= 'table' then
+		BitStreamIO[dataType].write(bs, value)
+	else -- process nested structures
+		for _, it in ipairs(dataType) do
+			local name, t = next(it)
+			write_data(bs, t, value[name])
+		end
+	end
+end
+
 local function process_event(bs, callback, struct, ignorebits)
 	local args = {}
 	if bs ~= 0 then
@@ -46,7 +70,7 @@ local function process_event(bs, callback, struct, ignorebits)
 			-- skip event name
 			for i = 2, #struct do
 				local _, t = next(struct[i]) -- type
-				table.insert(args, BitStreamIO[t].read(bs))
+				table.insert(args, read_data(bs, t))
 			end
 		end
 	end
@@ -72,7 +96,7 @@ local function process_event(bs, callback, struct, ignorebits)
 			assert(#struct - 1 == #result)
 			for i = 2, #struct do
 				local _, t = next(struct[i]) -- type
-				BitStreamIO[t].write(bs, result[i - 1])
+				write_data(bs, t, result[i - 1])
 			end
 		end
 	end
@@ -88,7 +112,7 @@ local function process_packet(id, bs, event_table, ignorebits)
 				end
 			end
 		else
-			for _, item in pairs(entry) do
+			for _, item in ipairs(entry) do
 				if type(MODULE[item[1]]) == 'function' then
 					if process_event(bs, MODULE[item[1]], item, ignorebits) == false then
 						return false
