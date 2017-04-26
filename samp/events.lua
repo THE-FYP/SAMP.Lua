@@ -87,7 +87,7 @@ INCOMING_RPCS[RPC.GAMEMODERESTART]            = {'onGamemodeRestart'}
 INCOMING_RPCS[RPC.PLAYAUDIOSTREAM]            = {'onPlayAudioStream', {url = 'string8'}, {position = 'vector3d'}, {radius = 'float'}, {usePosition = 'bool8'}}
 INCOMING_RPCS[RPC.STOPAUDIOSTREAM]            = {'onStopAudioStream'}
 INCOMING_RPCS[RPC.REMOVEBUILDINGFORPLAYER]    = {'onRemoveBuilding', {modelId = 'int32'}, {position = 'vector3d'}, {radius = 'float'}}
--- INCOMING_RPCS[RPC.CREATEOBJECT] = {''} -- TODO: test
+-- INCOMING_RPCS[RPC.CREATEOBJECT] = {''} -- TODO
 INCOMING_RPCS[RPC.SETOBJECTPOS]               = {'onSetObjectPosition', {objectId = 'int16'}, {position = 'vector3d'}}
 INCOMING_RPCS[RPC.SETOBJECTROT]               = {'onSetObjectRotation', {objectId = 'int16'}, {rotation = 'vector3d'}}
 INCOMING_RPCS[RPC.DESTROYOBJECT]              = {'onDestroyObject', {objectId = 'int16'}}
@@ -116,9 +116,9 @@ INCOMING_RPCS[RPC.SHOWMENU]                   = {'onShowMenu', {menuId = 'int8'}
 INCOMING_RPCS[RPC.HIDEMENU]                   = {'onHideMenu', {menuId = 'int8'}}
 INCOMING_RPCS[RPC.CREATEEXPLOSION]            = {'onCreateExplosion', {position = 'vector3d'}, {style = 'int32'}, {radius = 'float'}}
 INCOMING_RPCS[RPC.SHOWPLAYERNAMETAGFORPLAYER] = {'onShowPlayerNameTag', {playerId = 'int16'}, {show = 'bool8'}}
--- INCOMING_RPCS[RPC.ATTACHCAMERATOOBJECT] = {''} -- TODO: test - skip
--- INCOMING_RPCS[RPC.INTERPOLATECAMERA] = {''} -- TODO: test - skip
--- INCOMING_RPCS[RPC.SETOBJECTMATERIAL] = {''} -- TODO: test
+INCOMING_RPCS[RPC.ATTACHCAMERATOOBJECT]       = {'onAttachCameraToObject', {objectId = 'int16'}}
+INCOMING_RPCS[RPC.INTERPOLATECAMERA]          = {'onInterpolateCamera', {setPos = 'bool'}, {fromPos = 'vector3d'}, {destPos = 'vector3d'}, {time = 'int32'}, {mode = 'int8'}}
+-- INCOMING_RPCS[RPC.SETOBJECTMATERIAL] = {''} -- TODO
 INCOMING_RPCS[RPC.GANGZONESTOPFLASH]          = {'onGangZoneStopFlash', {zoneId = 'int16'}}
 INCOMING_RPCS[RPC.APPLYANIMATION]             = {'onApplyPlayerAnimation', {playerId = 'int16'}, {animLib = 'string8'}, {animName = 'string8'}, {loop = 'bool'}, {lockX = 'bool'}, {lockY = 'bool'}, {freeze = 'bool'}, {time = 'int32'}}
 INCOMING_RPCS[RPC.CLEARANIMATIONS]            = {'onClearPlayerAnimation', {playerId = 'int16'}}
@@ -129,13 +129,12 @@ INCOMING_RPCS[RPC.SETVEHICLEVELOCITY]         = {'onSetVehicleVelocity', {turn =
 INCOMING_RPCS[RPC.CLIENTMESSAGE]              = {'onServerMessage', {color = 'int32'}, {text = 'string32'}}
 INCOMING_RPCS[RPC.SETWORLDTIME]               = {'onSetWorldTime', {hour = 'int8'}}
 INCOMING_RPCS[RPC.CREATEPICKUP]               = {'onCreatePickup', {id = 'int32'}, {model = 'int32'}, {pickupType = 'int32'}, {position = 'vector3d'}}
--- INCOMING_RPCS[RPC.MOVEOBJECT] = {''} -- TODO: test - skip
+INCOMING_RPCS[RPC.MOVEOBJECT]                 = {'onMoveObject', {objectId = 'int16'}, {fromPos = 'vector3d'}, {destPos = 'vector3d'}, {speed = 'float'}, {rotation = 'vector3d'}}
 INCOMING_RPCS[RPC.ENABLESTUNTBONUSFORPLAYER]  = {'onEnableStuntBonus', {state = 'bool'}}
 INCOMING_RPCS[RPC.TEXTDRAWSETSTRING]          = {'onTextDrawSetString', {id = 'int16'}, {text = 'string16'}}
 INCOMING_RPCS[RPC.SETCHECKPOINT]              = {'onSetCheckpoint', {position = 'vector3d'}, {radius = 'float'}}
 INCOMING_RPCS[RPC.GANGZONECREATE]             = {'onCreateGangZone', {zoneId = 'int16'}, {squareStart = 'vector2d'}, {squareEnd = 'vector2d'}, {color = 'int32'}}
 INCOMING_RPCS[RPC.PLAYCRIMEREPORT]            = {'onPlayCrimeReport', {suspectId = 'int16'}, {'int32'}, {'int32'}, {'int32'}, {crime = 'int32'}, {coordinates = 'vector3d'}} -- TODO: find out unknown values
--- INCOMING_RPCS[RPC.SETPLAYERATTACHEDOBJECT] = {''} -- TODO: test - skip
 INCOMING_RPCS[RPC.GANGZONEDESTROY]            = {'onGangZoneDestroy', {zoneId = 'int16'}}
 INCOMING_RPCS[RPC.GANGZONEFLASH]              = {'onGangZoneFlash', {zoneId = 'int16'}, {color = 'int32'}}
 INCOMING_RPCS[RPC.STOPOBJECT]                 = {'onStopObject', {objectId = 'int16'}}
@@ -193,6 +192,20 @@ INCOMING_RPCS[RPC.SETVEHICLEPARAMSEX]         = {'onSetVehicleParamsEx',
     {backleft = 'bool8'},
     {backright = 'bool8'}
   }}
+}
+INCOMING_RPCS[RPC.SETPLAYERATTACHEDOBJECT]    = {'onSetPlayerAttachedObject',
+  {playerId = 'int16'},
+  {index = 'int32'},
+  {create = 'bool'},
+  {object = {
+    {modelId = 'int32'},
+    {bone = 'int32'},
+    {offset = 'vector3d'},
+    {rotation = 'vector3d'},
+    {scale = 'vector3d'},
+    {color1 = 'int32'},
+    {color2 = 'int32'}}
+  }
 }
 
 -- Outgoing packets
