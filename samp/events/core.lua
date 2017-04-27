@@ -75,16 +75,6 @@ local function process_event(bs, callback, struct, ignorebits)
 		end
 	end
 	local result = callback(unpack(args))
-	--- [[ DEBUG ]] ---
-	if raknetBitStreamGetNumberOfUnreadBits(bs) > 0 then
-		print(struct[1])
-		local unused_bytes = raknetBitStreamGetNumberOfUnreadBits(bs) / 8
-		print(' unread bits: ' .. raknetBitStreamGetNumberOfUnreadBits(bs), 'bytes: ' .. unused_bytes)
-		local memory = require 'memory'
-		local unread_data_str = memory.tohex(raknetBitStreamGetDataPtr(bs) + math.floor(raknetBitStreamGetReadOffset(bs) / 8), math.ceil(unused_bytes))
-		print(' unread data: ' .. string.gsub(unread_data_str, '([0-9A-F][0-9A-F])', '%1 '))
-	end
-	--- [[ DEBUG ]] ---
 	if result == false then
 		return false -- consume packet
 	end
