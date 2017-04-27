@@ -97,15 +97,14 @@ BitStreamIO.int1 = {
 
 BitStreamIO.string256 = {
 	read = function(bs)
-		return raknetBitStreamReadString(bs, 32)
+		local str = raknetBitStreamReadString(bs, 32)
+		local zero = string.find(str, '\0', 1, true)
+		return zero and str:sub(1, zero - 1) or str
 	end,
 	write = function(bs, value)
 		if #value >= 32 then raknetBitStreamWriteString(bs, value:sub(1, 32))
 		else
-			raknetBitStreamWriteString(bs, value)
-			for i = 1, 32 - #value do -- fill with zeros up to 32 bytes
-				raknetBitStreamWriteInt8(bs, 0)
-			end
+			raknetBitStreamWriteString(bs, value .. string.rep('\0', 32 - #value))
 		end
 	end
 }
