@@ -519,14 +519,13 @@ function handler.on_create_object_reader(bs)
 
 	local actionType = 0
 	while raknetBitStreamGetNumberOfUnreadBits(bs) > 0 do
-		 actionType = read.int8(bs)
-		 if actionType == 1 then
-			 table.insert(data.materials, read_object_material(bs))
-		 elseif actionType == 2 then
-			 table.insert(data.materials_text, read_object_material_text(bs))
-		 end
+		actionType = read.int8(bs)
+		if actionType == 1 then
+			table.insert(data.materials, read_object_material(bs))
+		elseif actionType == 2 then
+			table.insert(data.materials_text, read_object_material_text(bs))
+		end
 	end
-
 	return {objectId, data}
 end
 
@@ -550,11 +549,11 @@ function handler.on_create_object_writer(bs, data)
 	write.int8(bs, data.texturesCount)
 
 	for _, it in ipairs(data.materials) do
-    write_object_material(bs, it)
-  end
+		write_object_material(bs, it)
+	end	
 	for _, it in ipairs(data.materials_text) do
-    write_object_material_text(bs, it)
-  end
+		write_object_material_text(bs, it)
+	end
 end
 
 return handler
