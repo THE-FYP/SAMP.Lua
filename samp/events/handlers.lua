@@ -419,4 +419,142 @@ function handler.on_show_textdraw_writer(bs, data)
 	write.string16(bs, data.text)
 end
 
+local function read_object_material(bs)
+	local read = BitStreamIO.bs_read
+	local data = {}
+	data.materialId = read.int8(bs)
+	data.modelId = read.int16(bs)
+	data.libraryName = read.string8(bs)
+	data.textureName = read.string8(bs)
+	data.color = read.int32(bs)
+	return data
+end
+
+local function write_object_material(bs, data)
+	local write = BitStreamIO.bs_write
+	write.int8(bs, 1)
+	write.int8(bs, data.materialId)
+	write.int16(bs, data.modelId)
+	write.string8(bs, data.libraryName)
+	write.string8(bs, data.textureName)
+	write.int32(bs, data.color)
+end
+
+local function read_object_material_text(bs)
+	local read = BitStreamIO.bs_read
+	local data = {}
+	data.materialId = read.int8(bs)
+	data.materialSize = read.int8(bs)
+	data.fontName = read.string8(bs)
+	data.fontSize = read.int8(bs)
+	data.bold = read.int8(bs)
+	data.fontColor = read.int32(bs)
+	data.backGroundColor = read.int32(bs)
+	data.align = read.int8(bs)
+	data.text = read.encodedString2048(bs)
+	return data
+end
+
+local function write_object_material_text(bs, data)
+	local write = BitStreamIO.bs_write
+	write.int8(bs, 2)
+	write.int8(bs, data.materialId)
+	write.int8(bs, data.materialSize)
+	write.string8(bs, data.fontName)
+	write.int8(bs, data.fontSize)
+	write.int8(bs, data.bold)
+	write.int32(bs, data.fontColor)
+	write.int32(bs, data.backGroundColor)
+	write.int8(bs, data.align)
+	write.encodedString2048(bs, data.text)
+end
+
+
+--- onSetObjectMaterial
+function handler.on_set_object_material_reader(bs, t)
+	local read = BitStreamIO.bs_read
+	local objectId = read.int16(bs)
+	local actionType = read.int8(bs)
+	if actionType ~= t then return false end
+	local material
+	if actionType == 1 then
+		material = read_object_material(bs)
+	elseif actionType == 2 then
+		material = read_object_material_text(bs)
+	end
+	return {objectId, material}
+end
+
+function handler.on_set_object_material_writer(bs, data, t)
+	local write = BitStreamIO.bs_write
+	local objectId = data[1]
+	local data = data[2]
+	write.int16(bs, objectId)
+	if t == 1 then
+		write_object_material(bs, data)
+	elseif t == 2 then
+		write_object_material_text(bs, data)
+	end
+end
+
+
+--- onCreateObject
+function handler.on_create_object_reader(bs)
+	local read = BitStreamIO.bs_read
+	local data = {materials = {}, materials_text = {}}
+	local objectId = read.int16(bs)
+	data.modelId = read.int32(bs)
+	data.position = read.vector3d(bs)
+	data.rotation = read.vector3d(bs)
+	data.drawDistance = read.float(bs)
+	data.unk1 = read.int8(bs)
+	data.attachToVehicleId = read.int16(bs)
+	data.attachToPlayerId = read.int16(bs)
+	if data.attachToVehicleId ~= 65535 or data.attachToPlayerId ~= 65535 then
+		data.attachOffsets = read.vector3d(bs)
+		data.attachRotation = read.vector3d(bs)
+		data.unk2 = read.int8(bs)
+	end
+	data.texturesCount = read.int8(bs)
+
+	local actionType = 0
+	while raknetBitStreamGetNumberOfUnreadBits(bs) > 0 do
+		 actionType = read.int8(bs)
+		 if actionType == 1 then
+			 table.insert(data.materials, read_object_material(bs))
+		 elseif actionType == 2 then
+			 table.insert(data.materials_text, read_object_material_text(bs))
+		 end
+	end
+
+	return {objectId, data}
+end
+
+function handler.on_create_object_writer(bs, data)
+	local write = BitStreamIO.bs_write
+	local objectId = data[1]
+	local data = data[2]
+	write.int16(bs, objectId)
+	write.int32(bs, data.modelId)
+	write.vector3d(bs, data.position)
+	write.vector3d(bs, data.rotation)
+	write.float(bs, data.drawDistance)
+	write.int8(bs, data.unk1)
+	write.int16(bs, data.attachToVehicleId)
+	write.int16(bs, data.attachToPlayerId)
+	if data.attachToVehicleId ~= 65535 or data.attachToPlayerId ~= 65535 then
+		write.vector3d(bs, data.attachOffsets)
+		write.vector3d(bs, data.attachRotation)
+		write.int8(bs, data.unk2)
+	end
+	write.int8(bs, data.texturesCount)
+
+	for _, it in ipairs(data.materials) do
+    write_object_material(bs, it)
+  end
+	for _, it in ipairs(data.materials_text) do
+    write_object_material_text(bs, it)
+  end
+end
+
 return handler

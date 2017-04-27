@@ -109,6 +109,11 @@ BitStreamIO.string256 = {
 	end
 }
 
+BitStreamIO.encodedString2048 = {
+	read = function(bs) return raknetBitStreamDecodeString(bs, 2048) end,
+	write = function(bs, value) raknetBitStreamEncodeString(bs, value) end
+}
+
 BitStreamIO.encodedString4096 = {
 	read = function(bs) return raknetBitStreamDecodeString(bs, 4096) end,
 	write = function(bs, value) raknetBitStreamEncodeString(bs, value) end

@@ -87,7 +87,7 @@ INCOMING_RPCS[RPC.GAMEMODERESTART]            = {'onGamemodeRestart'}
 INCOMING_RPCS[RPC.PLAYAUDIOSTREAM]            = {'onPlayAudioStream', {url = 'string8'}, {position = 'vector3d'}, {radius = 'float'}, {usePosition = 'bool8'}}
 INCOMING_RPCS[RPC.STOPAUDIOSTREAM]            = {'onStopAudioStream'}
 INCOMING_RPCS[RPC.REMOVEBUILDINGFORPLAYER]    = {'onRemoveBuilding', {modelId = 'int32'}, {position = 'vector3d'}, {radius = 'float'}}
--- INCOMING_RPCS[RPC.CREATEOBJECT] = {''} -- TODO
+INCOMING_RPCS[RPC.CREATEOBJECT]               = {'onCreateObject', handler.on_create_object_reader, handler.on_create_object_writer}
 INCOMING_RPCS[RPC.SETOBJECTPOS]               = {'onSetObjectPosition', {objectId = 'int16'}, {position = 'vector3d'}}
 INCOMING_RPCS[RPC.SETOBJECTROT]               = {'onSetObjectRotation', {objectId = 'int16'}, {rotation = 'vector3d'}}
 INCOMING_RPCS[RPC.DESTROYOBJECT]              = {'onDestroyObject', {objectId = 'int16'}}
@@ -118,7 +118,6 @@ INCOMING_RPCS[RPC.CREATEEXPLOSION]            = {'onCreateExplosion', {position 
 INCOMING_RPCS[RPC.SHOWPLAYERNAMETAGFORPLAYER] = {'onShowPlayerNameTag', {playerId = 'int16'}, {show = 'bool8'}}
 INCOMING_RPCS[RPC.ATTACHCAMERATOOBJECT]       = {'onAttachCameraToObject', {objectId = 'int16'}}
 INCOMING_RPCS[RPC.INTERPOLATECAMERA]          = {'onInterpolateCamera', {setPos = 'bool'}, {fromPos = 'vector3d'}, {destPos = 'vector3d'}, {time = 'int32'}, {mode = 'int8'}}
--- INCOMING_RPCS[RPC.SETOBJECTMATERIAL] = {''} -- TODO
 INCOMING_RPCS[RPC.GANGZONESTOPFLASH]          = {'onGangZoneStopFlash', {zoneId = 'int16'}}
 INCOMING_RPCS[RPC.APPLYANIMATION]             = {'onApplyPlayerAnimation', {playerId = 'int16'}, {animLib = 'string8'}, {animName = 'string8'}, {loop = 'bool'}, {lockX = 'bool'}, {lockY = 'bool'}, {freeze = 'bool'}, {time = 'int32'}}
 INCOMING_RPCS[RPC.CLEARANIMATIONS]            = {'onClearPlayerAnimation', {playerId = 'int16'}}
@@ -168,6 +167,14 @@ INCOMING_RPCS[RPC.WORLDVEHICLEREMOVE]         = {'onVehicleStreamOut', {vehicleI
 INCOMING_RPCS[RPC.WORLDPLAYERDEATH]           = {'onPlayerDeath', {playerId = 'int16'}}
 INCOMING_RPCS[RPC.ENTERVEHICLE]               = {'onPlayerEnterVehicle', {playerId = 'int16'}, {vehicleId = 'int16'}, {passenger = 'bool8'}}
 INCOMING_RPCS[RPC.UPDATESCORESPINGSIPS]       = {'onUpdateScoresAndPings', {playerList = 'PlayerScorePingMap'}}
+INCOMING_RPCS[RPC.SETOBJECTMATERIAL]          = {
+	{'onSetObjectMaterial',
+		function(bs) return handler.on_set_object_material_reader(bs, 1) end,
+		function(bs, data) return handler.on_set_object_material_writer(bs, data, 1) end},
+	{'onSetObjectMaterialText',
+		function(bs) return handler.on_set_object_material_reader(bs, 2) end,
+		function(bs, data) return handler.on_set_object_material_writer(bs, data, 2) end}
+}
 INCOMING_RPCS[RPC.SETVEHICLEPARAMSEX]         = {'onSetVehicleParamsEx',
   {vehicleId = 'int16'},
   {params = {
