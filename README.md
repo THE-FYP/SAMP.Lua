@@ -23,7 +23,7 @@ end
 ```
 You can also interrupt processing any packets by returning `false`.
 ```lua
-function sampev.onSetPlayerPos(x, y, z)
+function sampev.onSetPlayerPos(position)
   -- prevent server from changing player's position
   return false
 end
@@ -32,16 +32,16 @@ end
 ```lua
 local sampev = require 'lib.samp.events'
 local raknet = require 'lib.samp.raknet'
-sampev.INTERFACE.INCOMING_RPCS[raknet.RPC.PLAYSOUND] = {'onPlaySound', {soundId = 'int32'}, {x = 'float'}, {y = 'float'}, {z = 'float'}}
+sampev.INTERFACE.INCOMING_RPCS[raknet.RPC.PLAYSOUND] = {'onPlaySound', {soundId = 'int32'}, {coordinates = 'vector3d'}}
 
-function sampev.onPlaySound(sound, x, y, z)
+function sampev.onPlaySound(sound, coords)
   -- add log message
-  print(string.format('Sound %d at coords %0.2f, %0.2f, %0.2f', sound, x, y, z))
+  print(string.format('Sound %d at coords %0.2f, %0.2f, %0.2f', sound, coords.x, coords.y, coords.z))
   -- and mute sound
   return false
 end
 ```
-The same way you can add your own types for more complex packet structures. See `events.lua` and `events_core.lua` for more information and examples.
+The same way you can add your own types for more complex packet structures. See source code for more information and examples.
 
 ## Installation
 Copy the entire folder `samp` into the `moonloader/lib/` directory.
@@ -49,3 +49,6 @@ Copy the entire folder `samp` into the `moonloader/lib/` directory.
 ## Links
 MoonLoader: http://blast.hk/moonloader/  
 Official thread at BlastHack: http://blast.hk/threads/14624/
+
+## Credits
+[FYP](https://github.com/THE-FYP), [MISTER_GONWIK](https://github.com/MISTERGONWIK) and contributors.
