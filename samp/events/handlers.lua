@@ -211,8 +211,8 @@ end
 
 --- onPlayerSync
 function handler.on_player_sync_reader(bs)
-	local has_value = read.bool
 	local read = BitStreamIO.bs_read
+	local has_value = read.bool
 	local data = {}
 	local playerId = read.int16(bs)
 	if has_value(bs) then data.leftRightKeys = read.int16(bs) end
