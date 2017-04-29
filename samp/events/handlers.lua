@@ -226,7 +226,7 @@ function handler.on_player_sync_reader(bs)
 	data.specialAction = read.int8(bs)
 	data.moveSpeed = read.compressedVector(bs)
 	if has_value(bs) then
-		data.surfingVehicleId = rend.int16(bs)
+		data.surfingVehicleId = read.int16(bs)
 		data.surfingOffsets = read.vector3d(bs)
 	end
 	if has_value(bs) then
