@@ -178,26 +178,26 @@ INCOMING_RPCS[RPC.SETOBJECTMATERIAL]          = {
 INCOMING_RPCS[RPC.SETVEHICLEPARAMSEX]         = {'onSetVehicleParamsEx',
   {vehicleId = 'int16'},
   {params = {
-    {engine = 'bool8'},
-    {lights = 'bool8'},
-    {alarm = 'bool8'},
-    {doors = 'bool8'},
-    {bonnet = 'bool8'},
-    {boot = 'bool8'},
-    {objective = 'bool8'},
-    {unknown = 'bool8'}
+    {engine = 'int8'},
+    {lights = 'int8'},
+    {alarm = 'int8'},
+    {doors = 'int8'},
+    {bonnet = 'int8'},
+    {boot = 'int8'},
+    {objective = 'int8'},
+    {unknown = 'int8'}
   }},
   {doors = {
-    {driver = 'bool8'},
-    {passenger = 'bool8'},
-    {backleft = 'bool8'},
-    {backright = 'bool8'}
+    {driver = 'int8'},
+    {passenger = 'int8'},
+    {backleft = 'int8'},
+    {backright = 'int8'}
   }},
   {windows = {
-    {driver = 'bool8'},
-    {passenger = 'bool8'},
-    {backleft = 'bool8'},
-    {backright = 'bool8'}
+    {driver = 'int8'},
+    {passenger = 'int8'},
+    {backleft = 'int8'},
+    {backright = 'int8'}
   }}
 }
 INCOMING_RPCS[RPC.SETPLAYERATTACHEDOBJECT]    = {'onSetPlayerAttachedObject',
