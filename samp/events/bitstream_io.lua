@@ -51,7 +51,7 @@ BitStreamIO.string16 = {
 		return raknetBitStreamReadString(bs, len)
 	end,
 	write = function(bs, value)
-		raknetBitStreamReadInt16(bs, #value)
+		raknetBitStreamWriteInt16(bs, #value)
 		raknetBitStreamWriteString(bs, value)
 	end
 }
