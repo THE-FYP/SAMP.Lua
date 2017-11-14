@@ -33,7 +33,7 @@ function handler.send_give_take_damage_writer(bs, data, take)
 end
 
 
---- OnInitGame
+--- onInitGame
 function handler.on_init_game_reader(bs)
 	local read                     = BitStreamIO.bs_read
 	local settings                 = {}
@@ -108,7 +108,7 @@ function handler.on_init_game_writer(bs, data)
 end
 
 
---- OnInitMenu
+--- onInitMenu
 function handler.on_init_menu_reader(bs)
 	local read = BitStreamIO.bs_read
 	local colWidth2
@@ -411,6 +411,7 @@ function handler.on_show_textdraw_writer(bs, data)
 	write.int8(bs, data.shadow)
 	write.int8(bs, data.outline)
 	write.int32(bs, data.backgroundColor)
+	write.int8(bs, data.style)
 	write.int8(bs, data.selectable)
 	write.vector2d(bs, data.position)
 	write.int16(bs, data.modelId)
