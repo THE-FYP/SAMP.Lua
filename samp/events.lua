@@ -42,16 +42,8 @@ OUTCOMING_RPCS[RPC.VEHICLEDESTROYED]          = {'onSendVehicleDestroyed', {vehi
 OUTCOMING_RPCS[RPC.MENUQUIT]                  = {'onSendQuitMenu'}
 OUTCOMING_RPCS[RPC.EXITVEHICLE]               = {'onSendExitVehicle', {vehicleId = 'int16'}}
 OUTCOMING_RPCS[RPC.UPDATESCORESPINGSIPS]      = {'onSendUpdateScoresAndPings'}
-OUTCOMING_RPCS[RPC.GIVETAKEDAMAGE]            = {
-	-- playerId = 'int16', damage = 'float', weapon = 'int32', bodypart ='int32'
-	{'onSendGiveDamage',
-	function(bs) return handler.send_give_take_damage_reader(bs, false) end,
-	function(bs, data) return handler.send_give_take_damage_writer(bs, data, false) end},
-	-- playerId = 'int16', damage = 'float', weapon = 'int32', bodypart ='int32'
-	{'onSendTakeDamage',
-	function(bs) return handler.send_give_take_damage_reader(bs, true) end,
-	function(bs, data) return handler.send_give_take_damage_writer(bs, data, true) end}
-}
+-- playerId = 'int16', damage = 'float', weapon = 'int32', bodypart ='int32'
+OUTCOMING_RPCS[RPC.GIVETAKEDAMAGE]            = {{'onSendGiveDamage', 'onSendTakeDamage'}, handler.on_send_give_take_damage_reader, handler.on_send_give_take_damage_writer}
 
 -- Incoming rpcs
 -- int playerId, string hostName, table settings, table vehicleModels, int unknown
@@ -167,14 +159,7 @@ INCOMING_RPCS[RPC.WORLDVEHICLEREMOVE]         = {'onVehicleStreamOut', {vehicleI
 INCOMING_RPCS[RPC.WORLDPLAYERDEATH]           = {'onPlayerDeath', {playerId = 'int16'}}
 INCOMING_RPCS[RPC.ENTERVEHICLE]               = {'onPlayerEnterVehicle', {playerId = 'int16'}, {vehicleId = 'int16'}, {passenger = 'bool8'}}
 INCOMING_RPCS[RPC.UPDATESCORESPINGSIPS]       = {'onUpdateScoresAndPings', {playerList = 'PlayerScorePingMap'}}
-INCOMING_RPCS[RPC.SETOBJECTMATERIAL]          = {
-	{'onSetObjectMaterial',
-		function(bs) return handler.on_set_object_material_reader(bs, 1) end,
-		function(bs, data) return handler.on_set_object_material_writer(bs, data, 1) end},
-	{'onSetObjectMaterialText',
-		function(bs) return handler.on_set_object_material_reader(bs, 2) end,
-		function(bs, data) return handler.on_set_object_material_writer(bs, data, 2) end}
-}
+INCOMING_RPCS[RPC.SETOBJECTMATERIAL]          = {{'onSetObjectMaterial', 'onSetObjectMaterialText'}, handler.on_set_object_material_reader, handler.on_set_object_material_writer}
 INCOMING_RPCS[RPC.SETVEHICLEPARAMSEX]         = {'onSetVehicleParamsEx',
   {vehicleId = 'int16'},
   {params = {
