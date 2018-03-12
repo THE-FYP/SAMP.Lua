@@ -319,7 +319,7 @@ function handler.on_vehicle_sync_writer(bs, data)
 end
 
 
---- onVehicleSteamIn
+--- onVehicleStreamIn
 function handler.on_vehicle_stream_in_reader(bs)
 	local read = BitStreamIO.bs_read
 	local data = {modSlots = {}}
@@ -515,13 +515,13 @@ function handler.on_create_object_reader(bs)
 	data.position = read.vector3d(bs)
 	data.rotation = read.vector3d(bs)
 	data.drawDistance = read.float(bs)
-	data.unk1 = read.int8(bs)
+	data.noCameraCol = read.int8(bs)
+	data.attachToObjectId = read.int16(bs)
 	data.attachToVehicleId = read.int16(bs)
-	data.attachToPlayerId = read.int16(bs)
-	if data.attachToVehicleId ~= 65535 or data.attachToPlayerId ~= 65535 then
+	if data.attachToVehicleId ~= -1 or data.attachToPlayerId ~= -1 then
 		data.attachOffsets = read.vector3d(bs)
 		data.attachRotation = read.vector3d(bs)
-		data.unk2 = read.int8(bs)
+		data.syncRotation = read.int8(bs)
 	end
 	data.texturesCount = read.int8(bs)
 
@@ -547,13 +547,13 @@ function handler.on_create_object_writer(bs, data)
 	write.vector3d(bs, data.position)
 	write.vector3d(bs, data.rotation)
 	write.float(bs, data.drawDistance)
-	write.int8(bs, data.unk1)
+	write.int8(bs, data.noCameraCol)
+	write.int16(bs, data.attachToObjectId)
 	write.int16(bs, data.attachToVehicleId)
-	write.int16(bs, data.attachToPlayerId)
-	if data.attachToVehicleId ~= 65535 or data.attachToPlayerId ~= 65535 then
+	if data.attachToVehicleId ~= -1 or data.attachToPlayerId ~= -1 then
 		write.vector3d(bs, data.attachOffsets)
 		write.vector3d(bs, data.attachRotation)
-		write.int8(bs, data.unk2)
+		write.int8(bs, data.syncRotation)
 	end
 	write.int8(bs, data.texturesCount)
 
