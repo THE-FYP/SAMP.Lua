@@ -515,13 +515,13 @@ function handler.on_create_object_reader(bs)
 	data.position = read.vector3d(bs)
 	data.rotation = read.vector3d(bs)
 	data.drawDistance = read.float(bs)
-	data.noCameraCol = read.int8(bs)
-	data.attachToObjectId = read.int16(bs)
+	data.noCameraCol = read.bool8(bs)
 	data.attachToVehicleId = read.int16(bs)
-	if data.attachToVehicleId ~= -1 or data.attachToPlayerId ~= -1 then
+	data.attachToObjectId = read.int16(bs)
+	if data.attachToVehicleId ~= 65535 or data.attachToPlayerId ~= 65535 then
 		data.attachOffsets = read.vector3d(bs)
 		data.attachRotation = read.vector3d(bs)
-		data.syncRotation = read.int8(bs)
+		data.syncRotation = read.bool8(bs)
 	end
 	data.texturesCount = read.int8(bs)
 
@@ -547,13 +547,13 @@ function handler.on_create_object_writer(bs, data)
 	write.vector3d(bs, data.position)
 	write.vector3d(bs, data.rotation)
 	write.float(bs, data.drawDistance)
-	write.int8(bs, data.noCameraCol)
-	write.int16(bs, data.attachToObjectId)
+	write.bool8(bs, data.noCameraCol)
 	write.int16(bs, data.attachToVehicleId)
-	if data.attachToVehicleId ~= -1 or data.attachToPlayerId ~= -1 then
+	write.int16(bs, data.attachToObjectId)
+	if data.attachToVehicleId ~= 65535 or data.attachToPlayerId ~= 65535 then
 		write.vector3d(bs, data.attachOffsets)
 		write.vector3d(bs, data.attachRotation)
-		write.int8(bs, data.syncRotation)
+		write.bool8(bs, data.syncRotation)
 	end
 	write.int8(bs, data.texturesCount)
 
