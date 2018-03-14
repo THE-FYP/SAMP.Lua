@@ -199,6 +199,7 @@ INCOMING_RPCS[RPC.SETPLAYERATTACHEDOBJECT]    = {'onSetPlayerAttachedObject',
     {color2 = 'int32'}}
   }
 }
+INCOMING_RPCS[RPC.SHOWACTOR]         = {'onActorCreate', {actorId = 'int16'}, {skinId = 'int32'}, {position = 'vector3d'}, {rotation = 'float'}, {health = 'float'}}
 
 -- Outgoing packets
 OUTCOMING_PACKETS[PACKET.RCON_COMMAND]        = {'onSendRconCommand', {command = 'string32'}}
