@@ -526,7 +526,7 @@ function handler.on_create_object_reader(bs)
 	data.texturesCount = read.int8(bs)
 
 	local materialType
-	while raknetBitStreamGetNumberOfUnreadBits(bs) > 0 do
+	while raknetBitStreamGetNumberOfUnreadBits(bs) >= 8 do
 		materialType = read.int8(bs)
 		if materialType == MATERIAL_TYPE.TEXTURE then
 			table.insert(data.materials, read_object_material(bs))
