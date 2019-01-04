@@ -55,10 +55,8 @@ local function process_event(bs, callback, struct, ignorebits)
 	local args = {}
 	if bs ~= 0 then
 		if ignorebits then
-			-- skip packet id
 			raknetBitStreamIgnoreBits(bs, ignorebits)
 		end
-
 		if type(struct[2]) == 'function' then
 			local r1, r2 = struct[2](bs) -- call custom reading function
 			if type(callback) == 'table' and type(r1) == 'string' then

@@ -161,6 +161,7 @@ INCOMING_RPCS[RPC.ENTERVEHICLE]               = {'onPlayerEnterVehicle', {player
 INCOMING_RPCS[RPC.UPDATESCORESPINGSIPS]       = {'onUpdateScoresAndPings', {playerList = 'PlayerScorePingMap'}}
 INCOMING_RPCS[RPC.SETOBJECTMATERIAL]          = {{'onSetObjectMaterial', 'onSetObjectMaterialText'}, handler.on_set_object_material_reader, handler.on_set_object_material_writer}
 INCOMING_RPCS[RPC.CREATEACTOR]                = {'onCreateActor', {actorId = 'int16'}, {skinId = 'int32'}, {position = 'vector3d'}, {rotation = 'float'}, {health = 'float'}}
+INCOMING_RPCS[RPC.CLICKTEXTDRAW]              = {'onToggleSelectTextDraw', {state = 'bool'}, {hovercolor = 'int32'}}
 INCOMING_RPCS[RPC.SETVEHICLEPARAMSEX]         = {'onSetVehicleParamsEx',
   {vehicleId = 'int16'},
   {params = {
