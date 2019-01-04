@@ -1,8 +1,8 @@
 package = "samp-lua"
-version = "2.0.6-1"
+version = "2.1.0-1"
 source = {
    url = "git+https://github.com/THE-FYP/SAMP.Lua.git",
-   branch = "luarocks"
+   tag = "v2.1.0"
 }
 description = {
    summary = "A SA-MP API library for MoonLoader",
