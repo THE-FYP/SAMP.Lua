@@ -3,7 +3,6 @@
 -- Copyright (c) 2016, FYP @ BlastHack Team <blast.hk>
 -- https://github.com/THE-FYP/SAMP.Lua
 
-
 local MODULE =
 {
 	MODULEINFO = {
@@ -14,12 +13,14 @@ local MODULE =
 local ffi = require 'ffi'
 
 ffi.cdef[[
-struct VectorXYZ
+#pragma pack(push, 1)
+
+typedef struct VectorXYZ
 {
 	float x, y, z;
-};
+} VectorXYZ;
 
-struct SampKeys {
+typedef struct SampKeys {
 	uint8_t	primaryFire : 1;
 	uint8_t	horn_crouch : 1;
 	uint8_t	secondaryFire_shoot : 1;
@@ -36,9 +37,9 @@ struct SampKeys {
 	uint8_t	specialCtrlLeft : 1;
 	uint8_t	specialCtrlRight : 1;
 	uint8_t	_unknown : 1;
-};
+} SampKeys;
 
-struct PlayerSyncData {
+typedef struct PlayerSyncData {
 	uint16_t          leftRightKeys;
 	uint16_t          upDownKeys;
 	union {
@@ -56,9 +57,9 @@ struct PlayerSyncData {
 	uint16_t          surfingVehicleId;
 	uint16_t          animationId;
 	uint16_t          animationFlags;
-} __attribute__ ((packed));
+} PlayerSyncData;
 
-struct VehicleSyncData {
+typedef struct VehicleSyncData {
 	uint16_t	        vehicleId;
 	uint16_t          leftRightKeys;
 	uint16_t          upDownKeys;
@@ -80,9 +81,9 @@ struct VehicleSyncData {
 		float		        trainSpeed;
 		uint16_t				hydraThrustAngle[2];
 	};
-} __attribute__ ((packed));
+} VehicleSyncData;
 
-struct PassengerSyncData
+typedef struct PassengerSyncData
 {
 	uint16_t	        vehicleId;
 	uint8_t		        seatId;
@@ -96,9 +97,9 @@ struct PassengerSyncData
 		struct SampKeys keys;
 	};
 	struct VectorXYZ	position;
-} __attribute__ ((packed));
+} PassengerSyncData;
 
-struct UnoccupiedSyncData
+typedef struct UnoccupiedSyncData
 {
 	uint16_t	       vehicleId;
 	uint8_t		       seatId;
@@ -108,9 +109,9 @@ struct UnoccupiedSyncData
 	struct VectorXYZ moveSpeed;
 	struct VectorXYZ turnSpeed;
 	float		         vehicleHealth;
-} __attribute__ ((packed));
+} UnoccupiedSyncData;
 
-struct TrailerSyncData
+typedef struct TrailerSyncData
 {
 	uint16_t	       trailerId;
 	struct VectorXYZ position;
@@ -118,9 +119,9 @@ struct TrailerSyncData
 	struct VectorXYZ direction;
 	struct VectorXYZ speed;
 	uint32_t	       unk;
-} __attribute__ ((packed));
+} TrailerSyncData;
 
-struct SpectatorSyncData
+typedef struct SpectatorSyncData
 {
 	uint16_t          leftRightKeys;
 	uint16_t          upDownKeys;
@@ -129,9 +130,9 @@ struct SpectatorSyncData
 		struct SampKeys keys;
 	};
 	struct VectorXYZ  position;
-} __attribute__ ((packed));
+} SpectatorSyncData;
 
-struct BulletSyncData
+typedef struct BulletSyncData
 {
 	uint8_t		       targetType;
 	uint16_t	       targetId;
@@ -139,9 +140,9 @@ struct BulletSyncData
 	struct VectorXYZ target;
 	struct VectorXYZ center;
 	uint8_t		       weaponId;
-} __attribute__ ((packed));
+} BulletSyncData;
 
-struct AimSyncData
+typedef struct AimSyncData
 {
 	uint8_t	 	       camMode;
 	struct VectorXYZ camFront;
@@ -150,7 +151,20 @@ struct AimSyncData
 	uint8_t		       camExtZoom : 6;
 	uint8_t		       weaponState : 2;
 	uint8_t		       unknown;
-} __attribute__ ((packed));
+} AimSyncData;
+
+#pragma pack(pop)
 ]]
+
+assert(ffi.sizeof('VectorXYZ') == 12)
+assert(ffi.sizeof('SampKeys') == 2)
+assert(ffi.sizeof('PlayerSyncData') == 68)
+assert(ffi.sizeof('VehicleSyncData') == 63)
+assert(ffi.sizeof('PassengerSyncData') == 24)
+assert(ffi.sizeof('UnoccupiedSyncData') == 67)
+assert(ffi.sizeof('TrailerSyncData') == 54)
+assert(ffi.sizeof('SpectatorSyncData') == 18)
+assert(ffi.sizeof('BulletSyncData') == 40)
+assert(ffi.sizeof('AimSyncData') == 31)
 
 return MODULE
