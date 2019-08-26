@@ -3,7 +3,6 @@
 -- Copyright (c) 2016, FYP @ BlastHack Team <blast.hk>
 -- https://github.com/THE-FYP/SAMP.Lua
 
-
 local MODULE =
 {
 	MODULEINFO = {
@@ -11,7 +10,7 @@ local MODULE =
 		version = 1
 	}
 }
-require 'lib.sampfuncs'
+require 'sampfuncs'
 
 MODULE.RPC = {
 	CLICKPLAYER                   = RPC_CLICKPLAYER,

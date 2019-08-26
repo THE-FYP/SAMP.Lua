@@ -3,12 +3,11 @@
 -- Copyright (c) 2016, FYP @ BlastHack Team <blast.hk>
 -- https://github.com/THE-FYP/SAMP.Lua
 
-
-local raknet                                  = require 'lib.samp.raknet'
-local events                                  = require 'lib.samp.events.core'
-local utils                                   = require 'lib.samp.events.utils'
-local handler                                 = require 'lib.samp.events.handlers'
-                                                require 'lib.samp.events.extra_types'
+local raknet                                  = require 'samp.raknet'
+local events                                  = require 'samp.events.core'
+local utils                                   = require 'samp.events.utils'
+local handler                                 = require 'samp.events.handlers'
+                                                require 'samp.events.extra_types'
 local RPC                                     = raknet.RPC
 local PACKET                                  = raknet.PACKET
 local OUTCOMING_RPCS                          = events.INTERFACE.OUTCOMING_RPCS

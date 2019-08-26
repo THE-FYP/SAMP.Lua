@@ -3,7 +3,7 @@
 -- Copyright (c) 2016, FYP @ BlastHack Team <blast.hk>
 -- https://github.com/THE-FYP/SAMP.Lua
 
-
+local ffi = require 'ffi'
 local utils = {}
 
 function utils.decompress_health_and_armor(hpAp)
@@ -29,25 +29,22 @@ function utils.compress_health_and_armor(hp, armor)
 	return hpAp
 end
 
-function utils.read_sync_data(bs, type)
-	local ffi = require 'ffi'
-	require 'lib.samp.synchronization'
-	local dataStruct = ffi.new('struct ' .. type .. '[1]')
-	raknetBitStreamReadBuffer(bs, tonumber(ffi.cast('intptr_t', dataStruct)), ffi.sizeof('struct ' .. type))
+function utils.read_sync_data(bs, st)
+	require 'samp.synchronization'
+	local dataStruct = ffi.new(st .. '[1]')
+	raknetBitStreamReadBuffer(bs, tonumber(ffi.cast('intptr_t', dataStruct)), ffi.sizeof(dataStruct))
 	return dataStruct[0]
 end
 
-function utils.write_sync_data(bs, type, ffiobj)
-	local ffi = require 'ffi'
-	require 'lib.samp.synchronization'
-	raknetBitStreamWriteBuffer(bs, tonumber(ffi.cast('intptr_t', ffiobj)), ffi.sizeof('struct ' .. type))
+function utils.write_sync_data(bs, st, ffiobj)
+	require 'samp.synchronization'
+	raknetBitStreamWriteBuffer(bs, tonumber(ffi.cast('intptr_t', ffiobj)), ffi.sizeof(st))
 end
 
-function utils.process_outcoming_sync_data(bs, structName)
+function utils.process_outcoming_sync_data(bs, st)
 	local data = raknetBitStreamGetDataPtr(bs) + 1
-	local ffi = require 'ffi'
-	require 'lib.samp.synchronization'
-	return {ffi.cast('struct ' .. structName .. '*', data)}
+	require 'samp.synchronization'
+	return {ffi.cast(st .. '*', data)}
 end
 
 return utils

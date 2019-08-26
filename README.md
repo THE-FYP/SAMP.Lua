@@ -8,7 +8,7 @@ Gives ability to handle SA:MP incoming and outcoming low-level network packets b
 
 ### Usage
 ```lua
-local sampev = require 'lib.samp.events'
+local sampev = require 'samp.events'
 
 -- intercept outgoing chat messages
 function sampev.onSendChat(msg)
@@ -30,8 +30,8 @@ end
 ```
 ##### Adding your own packet handler
 ```lua
-local sampev = require 'lib.samp.events'
-local raknet = require 'lib.samp.raknet'
+local sampev = require 'samp.events'
+local raknet = require 'samp.raknet'
 sampev.INTERFACE.INCOMING_RPCS[raknet.RPC.PLAYSOUND] = {'onPlaySound', {soundId = 'int32'}, {coordinates = 'vector3d'}}
 
 function sampev.onPlaySound(sound, coords)

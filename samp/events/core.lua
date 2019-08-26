@@ -3,7 +3,6 @@
 -- Copyright (c) 2016, FYP @ BlastHack Team <blast.hk>
 -- https://github.com/THE-FYP/SAMP.Lua
 
-
 local MODULE = {
 	MODULEINFO = {
 		name = 'samp.events',
@@ -19,11 +18,11 @@ local MODULE = {
 }
 
 -- check dependencies
-assert(isSampLoaded(), 'SA:MP is not loaded')
+assert(isSampLoaded(), 'SA-MP is not loaded')
 assert(isSampfuncsLoaded(), 'samp.events requires SAMPFUNCS')
 assert(getMoonloaderVersion() >= 20, 'samp.events requires MoonLoader v.020 or greater')
 
-local BitStreamIO            = require 'lib.samp.events.bitstream_io'
+local BitStreamIO            = require 'samp.events.bitstream_io'
 MODULE.INTERFACE.BitStreamIO = BitStreamIO
 
 
