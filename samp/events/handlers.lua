@@ -114,18 +114,18 @@ function handler.on_init_menu_reader(bs)
 	local columns = {}
 
 	local readColumn = function(width)
-		local title = read.string256(bs)
+		local title = read.fixedString32(bs)
 		local rowCount = read.int8(bs)
 		local column = {title = title, width = width, text = {}}
 		for i = 1, rowCount do
-			column.text[i] = read.string256(bs)
+			column.text[i] = read.fixedString32(bs)
 		end
 		return column
 	end
 
 	local menuId     = read.int8(bs)
 	local twoColumns = read.bool32(bs)
-	local menuTitle  = read.string256(bs)
+	local menuTitle  = read.fixedString32(bs)
 	local x          = read.float(bs)
 	local y          = read.float(bs)
 	local colWidth1  = read.float(bs)
@@ -149,7 +149,7 @@ function handler.on_init_menu_writer(bs, data)
 	local columns = data[6]
 	write.int8(bs, data[1])      -- menuId
 	write.bool32(bs, data[5])    -- twoColumns
-	write.string256(bs, data[2]) -- title
+	write.fixedString32(bs, data[2]) -- title
 	write.float(bs, data[3])     -- x
 	write.float(bs, data[4])     -- y
 	-- columns width
@@ -164,10 +164,10 @@ function handler.on_init_menu_writer(bs, data)
 	end
 	-- columns
 	for i = 1, (data[5] and 2 or 1) do
-		write.string256(bs, columns[i].title)
+		write.fixedString32(bs, columns[i].title)
 		write.int8(bs, #columns[i].text)
 		for r, t in ipairs(columns[i].text) do
-			write.string256(bs, t)
+			write.fixedString32(bs, t)
 		end
 	end
 end
