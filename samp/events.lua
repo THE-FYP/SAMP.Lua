@@ -19,7 +19,7 @@ local INCOMING_PACKETS                        = events.INTERFACE.INCOMING_PACKET
 OUTCOMING_RPCS[RPC.ENTERVEHICLE]              = {'onSendEnterVehicle', {vehicleId = 'int16'}, {passenger = 'bool8'}}
 OUTCOMING_RPCS[RPC.CLICKPLAYER]               = {'onSendClickPlayer', {playerId = 'int16'}, {source = 'int8'}}
 OUTCOMING_RPCS[RPC.CLIENTJOIN]                = {'onSendClientJoin', {version = 'int32'}, {mod = 'int8'}, {nickname = 'string8'}, {challengeResponse = 'int32'}, {joinAuthKey = 'string8'}, {clientVer = 'string8'}, {unknown = 'int32'}}
-OUTCOMING_RPCS[RPC.ENTEREDITOBJECT]           = {'onSendEnterEditObject', {type = 'int32'}, {objectId = 'int16'}, {model = 'int32'}, {position = 'vector3d'}}
+OUTCOMING_RPCS[RPC.SELECTOBJECT]              = {'onSendSelectObject', {type = 'int32'}, {objectId = 'int16'}, {model = 'int32'}, {position = 'vector3d'}}
 OUTCOMING_RPCS[RPC.SERVERCOMMAND]             = {'onSendCommand', {command = 'string32'}}
 OUTCOMING_RPCS[RPC.SPAWN]                     = {'onSendSpawn'}
 OUTCOMING_RPCS[RPC.DEATH]                     = {'onSendDeathNotification', {reason = 'int8'}, {killerId = 'int16'}}
@@ -27,7 +27,7 @@ OUTCOMING_RPCS[RPC.DIALOGRESPONSE]            = {'onSendDialogResponse', {dialog
 OUTCOMING_RPCS[RPC.CLICKTEXTDRAW]             = {'onSendClickTextDraw', {textdrawId = 'int16'}}
 OUTCOMING_RPCS[RPC.SCMEVENT]                  = {'onSendVehicleTuningNotification', {vehicleId = 'int32'}, {param1 = 'int32'}, {param2 = 'int32'}, {event = 'int32'}}
 OUTCOMING_RPCS[RPC.CHAT]                      = {'onSendChat', {message = 'string8'}}
-OUTCOMING_RPCS[RPC.CLIENTCHECK]               = {'onSendClientCheckResponse', {'int8'}, {'int32'}, {'int8'}}
+OUTCOMING_RPCS[RPC.CLIENTCHECK]               = {'onSendClientCheckResponse', {requestType = 'int8'}, {result1 = 'int32'}, {result2 = 'int8'}}
 OUTCOMING_RPCS[RPC.DAMAGEVEHICLE]             = {'onSendVehicleDamaged', {vehicleId = 'int16'}, {panelDmg = 'int32'}, {doorDmg = 'int32'}, {lights = 'int8'}, {tires = 'int8'}}
 OUTCOMING_RPCS[RPC.EDITATTACHEDOBJECT]        = {'onSendEditAttachedObject', {response = 'int32'}, {index = 'int32'}, {model = 'int32'}, {bone = 'int32'}, {position = 'vector3d'}, {rotation = 'vector3d'}, {scale = 'vector3d'}, {color1 = 'int32'}, {color2 = 'int32'}}
 OUTCOMING_RPCS[RPC.EDITOBJECT]                = {'onSendEditObject', {playerObject = 'bool'}, {objectId = 'int16'}, {response = 'int32'}, {position = 'vector3d'}, {rotation = 'vector3d'}}
@@ -85,7 +85,7 @@ INCOMING_RPCS[RPC.DESTROYOBJECT]              = {'onDestroyObject', {objectId = 
 INCOMING_RPCS[RPC.DEATHMESSAGE]               = {'onPlayerDeathNotification', {killerId = 'int16'}, {killedId = 'int16'}, {reason = 'int8'}}
 INCOMING_RPCS[RPC.SETPLAYERMAPICON]           = {'onSetMapIcon', {iconId = 'int8'}, {position = 'vector3d'}, {type = 'int8'}, {color = 'int32'}, {style = 'int8'}}
 INCOMING_RPCS[RPC.REMOVEVEHICLECOMPONENT]     = {'onRemoveVehicleComponent', {vehicleId = 'int16'}, {componentId = 'int16'}}
-INCOMING_RPCS[RPC.UPDATE3DTEXTLABEL]          = {'onRemove3DTextLabel', {textLabelId = 'int16'}}
+INCOMING_RPCS[RPC.DESTROY3DTEXTLABEL]         = {'onRemove3DTextLabel', {textLabelId = 'int16'}}
 INCOMING_RPCS[RPC.CHATBUBBLE]                 = {'onPlayerChatBubble', {playerId = 'int16'}, {color = 'int32'}, {distance = 'float'}, {duration = 'int32'}, {message = 'string8'}}
 INCOMING_RPCS[RPC.UPDATETIME]                 = {'onUpdateGlobalTimer', {time = 'int32'}}
 INCOMING_RPCS[RPC.SHOWDIALOG]                 = {'onShowDialog', {dialogId = 'int16'}, {style = 'int8'}, {title = 'string8'}, {button1 = 'string8'}, {button2 = 'string8'}, {text = 'encodedString4096'}}
@@ -200,6 +200,34 @@ INCOMING_RPCS[RPC.SETPLAYERATTACHEDOBJECT]    = {'onSetPlayerAttachedObject',
     {color2 = 'int32'}}
   }
 }
+
+INCOMING_RPCS[RPC.CLIENTCHECK] = {'onClientCheck', {requestType = 'int8'}, {subject = 'int32'}, {offset = 'int16'}, {length = 'int16'}}
+INCOMING_RPCS[RPC.DESTROYACTOR] = {'onDestroyActor', {actorId = 'int16'}}
+INCOMING_RPCS[RPC.DESTROYWEAPONPICKUP] = {'onDestroyWeaponPickup', {id = 'int8'}}
+INCOMING_RPCS[RPC.EDITATTACHEDOBJECT] = {'onEditAttachedObject', {index = 'int32'}}
+INCOMING_RPCS[RPC.TOGGLECAMERATARGET] = {'onToggleCameraTargetNotifying', {enable = 'bool'}}
+INCOMING_RPCS[RPC.SELECTOBJECT] = {'onEnterSelectObject'}
+INCOMING_RPCS[RPC.EXITVEHICLE] = {'onPlayerExitVehicle', {playerId = 'int16'}, {vehicleId = 'int16'}}
+INCOMING_RPCS[RPC.SCMEVENT] = {'onVehicleTuningNotification', {playerId = 'int16'}, {vehicleId = 'int32'}, {event = 'int32'}, {param1 = 'int32'}, {param2 = 'int32'}}
+INCOMING_RPCS[RPC.SRVNETSTATS] = {'onServerStatistics', {data = '<struct 296b>'}}
+INCOMING_RPCS[RPC.EDITOBJECT] = {'onEnterEditObject', {playerObject = 'bool'}, {objectId = 'int16'}}
+INCOMING_RPCS[RPC.DAMAGEVEHICLE] = {'onVehicleDamageStatusUpdate', {vehicleId = 'int16'}, {panelDmg = 'int32'}, {doorDmg = 'int32'}, {lights = 'int8'}, {tires = 'int8'}}
+INCOMING_RPCS[RPC.DISABLEVEHICLECOLLISIONS] = {'onDisableVehicleCollisions', {disable = 'bool'}}
+INCOMING_RPCS[RPC.TOGGLEWIDESCREEN] = {'onToggleWidescreen', {enable = 'bool8'}}
+INCOMING_RPCS[RPC.SETVEHICLETIRES] = {'onSetVehicleTires', {vehicleId = 'int16'}, {tires = 'int8'}}
+INCOMING_RPCS[RPC.SETPLAYERDRUNKVISUALS] = {'onSetPlayerDrunkVisuals', {level = 'int32'}}
+INCOMING_RPCS[RPC.SETPLAYERDRUNKHANDLING] = {'onSetPlayerDrunkHandling', {level = 'int32'}}
+INCOMING_RPCS[RPC.APPLYACTORANIMATION] = {'onApplyActorAnimation', {actorId = 'int16'}, {animlib = 'string8'}, {animname = 'string8'}, {framedelta = 'float'}, {loop = 'bool'}, {lockx = 'bool'}, {locky = 'bool'}, {freeze = 'bool'}, {time = 'int32'}}
+INCOMING_RPCS[RPC.CLEARACTORANIMATION] = {'onClearActorAnimation', {actorId = 'int16'}}
+INCOMING_RPCS[RPC.SETACTORROTATION] = {'onSetActorFacingAngle', {actorId = 'int16'}, {angle = 'float'}}
+INCOMING_RPCS[RPC.SETACTORPOSITION] = {'onSetActorPos', {actorId = 'int16'}, {position = 'vector3d'}}
+INCOMING_RPCS[RPC.SETACTORHEALTH] = {'onSetActorHealth', {actorId = 'int16'}, {health = 'float'}}
+INCOMING_RPCS[RPC.SETPLAYEROBJECTNOCAMCOL] = {'onSetPlayerObjectNoCameraCol', {objectId = 'int16'}}
+
+INCOMING_RPCS[125] = {'_dummy125'}
+INCOMING_RPCS[64] = {'_dummy64', {'int16'}}
+INCOMING_RPCS[48] = {'_unused48', {'int32'}}
+
 
 -- Outgoing packets
 OUTCOMING_PACKETS[PACKET.RCON_COMMAND]        = {'onSendRconCommand', {command = 'string32'}}
