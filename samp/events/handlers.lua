@@ -368,57 +368,6 @@ function handler.on_vehicle_stream_in_writer(bs, data)
 end
 
 
---- onShowTextDraw
-function handler.on_show_textdraw_reader(bs)
-	local read = BitStreamIO.bs_read
-	local data = {}
-	local textdrawId = read.int16(bs)
-	data.flags = read.int8(bs)
-	data.letterWidth = read.float(bs)
-	data.letterHeight = read.float(bs)
-	data.letterColor = read.int32(bs)
-	data.lineWidth = read.float(bs)
-	data.lineHeight = read.float(bs)
-	data.boxColor = read.int32(bs)
-	data.shadow = read.int8(bs)
-	data.outline = read.int8(bs)
-	data.backgroundColor = read.int32(bs)
-	data.style = read.int8(bs)
-	data.selectable = read.int8(bs)
-	data.position = read.vector2d(bs)
-	data.modelId = read.int16(bs)
-	data.rotation = read.vector3d(bs)
-	data.zoom = read.float(bs)
-	data.color = read.int32(bs)
-	data.text = read.string16(bs)
-	return {textdrawId, data}
-end
-
-function handler.on_show_textdraw_writer(bs, data)
-	local write = BitStreamIO.bs_write
-	local textdrawId = data[1]
-	local data = data[2]
-	write.int16(bs, textdrawId)
-	write.int8(bs, data.flags)
-	write.float(bs, data.letterWidth)
-	write.float(bs, data.letterHeight)
-	write.int32(bs, data.letterColor)
-	write.float(bs, data.lineWidth)
-	write.float(bs, data.lineHeight)
-	write.int32(bs, data.boxColor)
-	write.int8(bs, data.shadow)
-	write.int8(bs, data.outline)
-	write.int32(bs, data.backgroundColor)
-	write.int8(bs, data.style)
-	write.int8(bs, data.selectable)
-	write.vector2d(bs, data.position)
-	write.int16(bs, data.modelId)
-	write.vector3d(bs, data.rotation)
-	write.float(bs, data.zoom)
-	write.int32(bs, data.color)
-	write.string16(bs, data.text)
-end
-
 local MATERIAL_TYPE = {
 	NONE = 0,
 	TEXTURE = 1,

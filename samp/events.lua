@@ -132,7 +132,29 @@ INCOMING_RPCS[RPC.SETNUMBERPLATE]             = {'onSetVehicleNumberPlate', {veh
 INCOMING_RPCS[RPC.TOGGLEPLAYERSPECTATING]     = {'onTogglePlayerSpectating', {state = 'bool32'}}
 INCOMING_RPCS[RPC.PLAYERSPECTATEPLAYER]       = {'onSpectatePlayer', {playerId = 'int16'}, {camType = 'int8'}}
 INCOMING_RPCS[RPC.PLAYERSPECTATEVEHICLE]      = {'onSpectateVehicle', {vehicleId = 'int16'}, {camType = 'int8'}}
-INCOMING_RPCS[RPC.SHOWTEXTDRAW]               = {'onShowTextDraw', handler.on_show_textdraw_reader, handler.on_show_textdraw_writer}
+INCOMING_RPCS[RPC.SHOWTEXTDRAW]               = {'onShowTextDraw',
+  {textdrawId = 'int16'},
+  {textdraw = {
+    {flags = 'int8'},
+    {letterWidth = 'float'},
+    {letterHeight = 'float'},
+    {letterColor = 'int32'},
+    {lineWidth = 'float'},
+    {lineHeight = 'float'},
+    {boxColor = 'int32'},
+    {shadow = 'int8'},
+    {outline = 'int8'},
+    {backgroundColor = 'int32'},
+    {style = 'int8'},
+    {selectable = 'int8'},
+    {position = 'vector2d'},
+    {modelId = 'int16'},
+    {rotation = 'vector3d'},
+    {zoom = 'float'},
+    {color = 'int32'},
+    {text = 'string16'}
+  }}
+}
 INCOMING_RPCS[RPC.SETPLAYERWANTEDLEVEL]       = {'onSetPlayerWantedLevel', {wantedLevel = 'int8'}}
 INCOMING_RPCS[RPC.TEXTDRAWHIDEFORPLAYER]      = {'onTextDrawHide', {textDrawId = 'int16'}}
 INCOMING_RPCS[RPC.REMOVEPLAYERMAPICON]        = {'onRemoveMapIcon', {iconId = 'int8'}}
@@ -200,7 +222,6 @@ INCOMING_RPCS[RPC.SETPLAYERATTACHEDOBJECT]    = {'onSetPlayerAttachedObject',
     {color2 = 'int32'}}
   }
 }
-
 INCOMING_RPCS[RPC.CLIENTCHECK] = {'onClientCheck', {requestType = 'int8'}, {subject = 'int32'}, {offset = 'int16'}, {length = 'int16'}}
 INCOMING_RPCS[RPC.DESTROYACTOR] = {'onDestroyActor', {actorId = 'int16'}}
 INCOMING_RPCS[RPC.DESTROYWEAPONPICKUP] = {'onDestroyWeaponPickup', {id = 'int8'}}
@@ -223,7 +244,6 @@ INCOMING_RPCS[RPC.SETACTORROTATION] = {'onSetActorFacingAngle', {actorId = 'int1
 INCOMING_RPCS[RPC.SETACTORPOSITION] = {'onSetActorPos', {actorId = 'int16'}, {position = 'vector3d'}}
 INCOMING_RPCS[RPC.SETACTORHEALTH] = {'onSetActorHealth', {actorId = 'int16'}, {health = 'float'}}
 INCOMING_RPCS[RPC.SETPLAYEROBJECTNOCAMCOL] = {'onSetPlayerObjectNoCameraCol', {objectId = 'int16'}}
-
 INCOMING_RPCS[125] = {'_dummy125'}
 INCOMING_RPCS[64] = {'_dummy64', {'int16'}}
 INCOMING_RPCS[48] = {'_unused48', {'int32'}}
