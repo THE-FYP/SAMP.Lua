@@ -65,8 +65,8 @@ function handler.on_init_game_reader(bs)
 	for i = 0, 212 - 1 do
 		vehicleModels[i] = read.int8(bs)
 	end
-	local unknown = read.int32(bs)
-	return {playerId, hostName, settings, vehicleModels, unknown}
+	settings.vehicleFriendlyFire = read.int32(bs)
+	return {playerId, hostName, settings, vehicleModels}
 end
 
 function handler.on_init_game_writer(bs, data)
@@ -102,7 +102,7 @@ function handler.on_init_game_writer(bs, data)
 	for i = 0, 212 - 1 do
 		write.int8(bs, vehicleModels[i])
 	end
-	write.int32(bs, data[5]) -- unknown
+	write.int32(bs, settings.vehicleFriendlyFire)
 end
 
 
