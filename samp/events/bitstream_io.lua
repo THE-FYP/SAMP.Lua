@@ -5,6 +5,20 @@
 
 local mod = {}
 local vector3d = require 'vector3d'
+local ffi = require 'ffi'
+
+local function bitstream_read_fixed_string(bs, size)
+	local buf = ffi.new('uint8_t[?]', size + 1)
+	raknetBitStreamReadBuffer(bs, tonumber(ffi.cast('intptr_t', buf)), size)
+	buf[size] = 0
+	-- Length is not specified to throw off trailing zeros.
+	return ffi.string(buf)
+end
+
+local function bitstream_write_fixed_string(bs, str, size)
+	local buf = ffi.new('uint8_t[?]', size, string.sub(str, 1, size))
+	raknetBitStreamWriteBuffer(bs, tonumber(ffi.cast('intptr_t', buf)), size)
+end
 
 mod.bool = {
 	read = function(bs) return raknetBitStreamReadBool(bs) end,
@@ -96,16 +110,10 @@ mod.int1 = {
 
 mod.fixedString32 = {
 	read = function(bs)
-		local str = raknetBitStreamReadString(bs, 32)
-		local zero = string.find(str, '\0', 1, true)
-		return zero and str:sub(1, zero - 1) or str
+		return bitstream_read_fixed_string(bs, 32)
 	end,
 	write = function(bs, value)
-		if #value >= 32 then
-			raknetBitStreamWriteString(bs, value:sub(1, 32))
-		else
-			raknetBitStreamWriteString(bs, value .. string.rep('\0', 32 - #value))
-		end
+		bitstream_write_fixed_string(bs, value, 32)
 	end
 }
 
