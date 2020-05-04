@@ -6,26 +6,6 @@
 local BitStreamIO = require 'samp.events.bitstream_io'
 local utils = require 'samp.events.utils'
 
-BitStreamIO.PlayerScorePingMap = {
-	read = function(bs)
-		local data = {}
-		for i = 1, raknetBitStreamGetNumberOfBytesUsed(bs) / 10 do
-			local playerId = raknetBitStreamReadInt16(bs)
-			local playerScore = raknetBitStreamReadInt32(bs)
-			local playerPing = raknetBitStreamReadInt32(bs)
-			data[playerId] = {score = playerScore, ping = playerPing}
-		end
-		return data
-	end,
-	write = function(bs, value)
-		for id, data in pairs(value) do
-			raknetBitStreamWriteInt16(bs, id)
-			raknetBitStreamWriteInt32(bs, data.score)
-			raknetBitStreamWriteInt32(bs, data.ping)
-		end
-	end
-}
-
 BitStreamIO.Int32Array3 = {
 	read = function(bs)
 		local arr = {}
