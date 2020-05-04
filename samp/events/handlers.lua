@@ -59,7 +59,7 @@ function handler.rpc_init_game_reader(bs)
 	settings.lagCompMode           = bsread.int32(bs)
 	local hostName                 = bsread.string8(bs)
 	local vehicleModels = {}
-	for i = 0, 212 - 1 do
+	for i = 1, 212 do
 		vehicleModels[i] = bsread.int8(bs)
 	end
 	settings.vehicleFriendlyFire = bsread.int32(bs)
