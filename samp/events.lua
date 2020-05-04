@@ -192,26 +192,26 @@ INCOMING_RPCS[RPC.CLICKTEXTDRAW]              = {'onToggleSelectTextDraw', {stat
 INCOMING_RPCS[RPC.SETVEHICLEPARAMSEX]         = {'onSetVehicleParamsEx',
   {vehicleId = 'int16'},
   {params = {
-    {engine = 'int8'},
-    {lights = 'int8'},
-    {alarm = 'int8'},
-    {doors = 'int8'},
-    {bonnet = 'int8'},
-    {boot = 'int8'},
-    {objective = 'int8'},
-    {unknown = 'int8'}
+    {engine = 'bool8'},
+    {lights = 'bool8'},
+    {alarm = 'bool8'},
+    {doors = 'bool8'},
+    {bonnet = 'bool8'},
+    {boot = 'bool8'},
+    {objective = 'bool8'},
+    {siren = 'bool8'}
   }},
   {doors = {
-    {driver = 'int8'},
-    {passenger = 'int8'},
-    {backleft = 'int8'},
-    {backright = 'int8'}
+    {driver = 'bool8'},
+    {passenger = 'bool8'},
+    {backleft = 'bool8'},
+    {backright = 'bool8'}
   }},
   {windows = {
-    {driver = 'int8'},
-    {passenger = 'int8'},
-    {backleft = 'int8'},
-    {backright = 'int8'}
+    {driver = 'bool8'},
+    {passenger = 'bool8'},
+    {backleft = 'bool8'},
+    {backright = 'bool8'}
   }}
 }
 INCOMING_RPCS[RPC.SETPLAYERATTACHEDOBJECT]    = {'onSetPlayerAttachedObject',
