@@ -498,4 +498,29 @@ function handler.rpc_update_scores_and_pings_writer(bs, data)
 		bswrite.int32(bs, info.ping)
 	end
 end
+
+function handler.packet_weapons_update_reader(bs)
+	local playerTarget = bsread.int16(bs)
+	local actorTarget = bsread.int16(bs)
+	local weapons = {}
+	local count = raknetBitStreamGetNumberOfUnreadBits(bs) / 32
+	for i = 1, count do
+		local slot = bsread.int8(bs)
+		local weapon = bsread.int8(bs)
+		local ammo = bsread.int16(bs)
+		weapons[i] = {slot = slot, weapon = weapon, ammo = ammo}
+	end
+	return {playerTarget, actorTarget, weapons}
+end
+
+function handler.packet_weapons_update_writer(bs, data)
+	bswrite.int16(bs, data[1])
+	bswrite.int16(bs, data[2])
+	for i, weap in ipairs(data[3]) do
+		bswrite.int8(bs, weap.slot)
+		bswrite.int8(bs, weap.weapon)
+		bswrite.int16(bs, weap.ammo)
+	end
+end
+
 return handler
