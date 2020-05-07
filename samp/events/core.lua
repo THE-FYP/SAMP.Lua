@@ -6,7 +6,7 @@
 local MODULE = {
 	MODULEINFO = {
 		name = 'samp.events',
-		version = 2
+		version = 3
 	},
 	INTERFACE = {
 		OUTCOMING_RPCS    = {},

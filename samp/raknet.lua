@@ -3,16 +3,16 @@
 -- Copyright (c) 2016, FYP @ BlastHack Team <blast.hk>
 -- https://github.com/THE-FYP/SAMP.Lua
 
-local MODULE =
+local mod =
 {
 	MODULEINFO = {
 		name = 'samp.raknet',
-		version = 1
+		version = 2
 	}
 }
 require 'sampfuncs'
 
-MODULE.RPC = {
+mod.RPC = {
 	CLICKPLAYER                   = RPC_CLICKPLAYER,
 	CLIENTJOIN                    = RPC_CLIENTJOIN,
 	ENTERVEHICLE                  = RPC_ENTERVEHICLE,
@@ -176,7 +176,7 @@ MODULE.RPC = {
 	UPDATE3DTEXTLABEL = RPC_SCRUPDATE3DTEXTLABEL,
 }
 
-MODULE.PACKET = {
+mod.PACKET = {
 	VEHICLE_SYNC                      = PACKET_VEHICLE_SYNC,
 	RCON_COMMAND                      = PACKET_RCON_COMMAND,
 	RCON_RESPONCE                     = PACKET_RCON_RESPONCE,
@@ -231,4 +231,4 @@ MODULE.PACKET = {
 	ADVERTISE_SYSTEM                  = PACKET_ADVERTISE_SYSTEM
 }
 
-return MODULE
+return mod
