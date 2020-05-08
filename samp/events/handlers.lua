@@ -170,9 +170,8 @@ function handler.packet_markers_sync_reader(bs)
 		local playerId = bsread.int16(bs)
 		local active = bsread.bool(bs)
 		if active then
-			local vector3d = require 'vector3d'
-			local x, y, z = bsread.int16(bs), bsread.int16(bs), bsread.int16(bs)
-			table.insert(markers, {playerId = playerId, active = true, coords = vector3d(x, y, z)})
+			local coords = bsread.shortVector3d(bs)
+			table.insert(markers, {playerId = playerId, active = true, coords = coords})
 		else
 			table.insert(markers, {playerId = playerId, active = false})
 		end
@@ -187,9 +186,7 @@ function handler.packet_markers_sync_writer(bs, data)
 		bswrite.int16(bs, it.playerId)
 		bswrite.bool(bs, it.active)
 		if it.active then
-			bswrite.int16(bs, it.coords.x)
-			bswrite.int16(bs, it.coords.y)
-			bswrite.int16(bs, it.coords.z)
+			bswrite.shortVector3d(data.coords)
 		end
 	end
 end
@@ -197,24 +194,36 @@ end
 --- onPlayerSync
 function handler.packet_player_sync_reader(bs)
 	local has_value = bsread.bool
-	local data = {}
+	local data = utils.create_sync_data('PlayerSyncData')
 	local playerId = bsread.int16(bs)
-	if has_value(bs) then data.leftRightKeys = bsread.int16(bs) end
-	if has_value(bs) then data.upDownKeys = bsread.int16(bs) end
-	data.keysData = bsread.int16(bs)
-	data.position = bsread.vector3d(bs)
-	data.quaternion = bsread.normQuat(bs)
-	data.health, data.armor = utils.decompress_health_and_armor(bsread.int8(bs))
-	data.weapon = bsread.int8(bs)
-	data.specialAction = bsread.int8(bs)
-	data.moveSpeed = bsread.compressedVector(bs)
 	if has_value(bs) then
-		data.surfingVehicleId = bsread.int16(bs)
-		data.surfingOffsets = bsread.vector3d(bs)
+		data.leftRightKeys = bsread.int16(bs)
+	else
+		data.leftRightKeys = 0
 	end
 	if has_value(bs) then
-		data.animationId = bsread.int16(bs)
-		data.animationFlags = bsread.int16(bs)
+		data.upDownKeys = bsread.int16(bs)
+	else
+		data.upDownKeys = 0
+	end
+	data.keysData = bsread.int16(bs)
+	local pos = bsread.vector3d(bs)
+	data.position = {pos.x, pos.y, pos.z}
+	data.quaternion = bsread.normQuat(bs)
+	data.health, data.armor = utils.decompress_health_and_armor(bsread.int8(bs))
+	data.weapon, data.specialKey = utils.decompress_weapon_and_special_key(bsread.int8(bs))
+	data.specialAction = bsread.int8(bs)
+	local speed = bsread.compressedVector(bs)
+	data.moveSpeed = {speed.x, speed.y, speed.z}
+	if has_value(bs) then
+		data.surfingVehicleId = bsread.int16(bs)
+		local surf = bsread.vector3d(bs)
+		data.surfingOffsets = {surf.x, surf.y, surf.z}
+	else
+		data.surfingVehicleId = 0
+	end
+	if has_value(bs) then
+		data.animationData = bsread.int32(bs)
 	end
 	return {playerId, data}
 end
@@ -223,52 +232,62 @@ function handler.packet_player_sync_writer(bs, data)
 	local playerId = data[1]
 	local data = data[2]
 	bswrite.int16(bs, playerId)
-	bswrite.bool(bs, data.leftRightKeys ~= nil)
-	if data.leftRightKeys then bswrite.int16(bs, data.leftRightKeys) end
-	bswrite.bool(bs, data.upDownKeys ~= nil)
-	if data.upDownKeys then bswrite.int16(bs, data.upDownKeys) end
+	bswrite.bool(bs, data.leftRightKeys ~= 0)
+	if data.leftRightKeys ~= 0 then
+		bswrite.int16(bs, data.leftRightKeys)
+	end
+	bswrite.bool(bs, data.upDownKeys ~= 0)
+	if data.upDownKeys ~= 0 then
+		bswrite.int16(bs, data.upDownKeys)
+	end
 	bswrite.int16(bs, data.keysData)
 	bswrite.vector3d(bs, data.position)
-	bswrite.normQuat(bs, data.quaternion)
+	local quat = data.quaternion
+	bswrite.normQuat(bs, {quat[0], quat[1], quat[2], quat[3]})
 	bswrite.int8(bs, utils.compress_health_and_armor(data.health, data.armor))
-	bswrite.int8(bs, data.weapon)
+	bswrite.int8(bs, utils.compress_weapon_and_special_key(data.weapon, data.specialKey))
 	bswrite.int8(bs, data.specialAction)
 	bswrite.compressedVector(bs, data.moveSpeed)
-	bswrite.bool(bs, data.surfingVehicleId ~= nil)
-	if data.surfingVehicleId then
+	bswrite.bool(bs, data.surfingVehicleId ~= 0)
+	if data.surfingVehicleId ~= 0 then
 		bswrite.int16(bs, data.surfingVehicleId)
 		bswrite.vector3d(bs, data.surfingOffsets)
 	end
-	bswrite.bool(bs, data.animationId ~= nil)
-	if data.animationId then
-		bswrite.int16(bs, data.animationId)
-		bswrite.int16(bs, data.animationFlags)
+	bswrite.bool(bs, data.animationData ~= 0)
+	if data.animationData ~= 0 then
+		bswrite.int32(bs, data.animationData)
 	end
 end
 
 --- onVehicleSync
 function handler.packet_vehicle_sync_reader(bs)
-	local data = {}
+	local data = utils.create_sync_data('VehicleSyncData')
 	local playerId = bsread.int16(bs)
-	local vehicleId = bsread.int16(bs)
+	data.vehicleId = bsread.int16(bs)
 	data.leftRightKeys = bsread.int16(bs)
 	data.upDownKeys = bsread.int16(bs)
 	data.keysData = bsread.int16(bs)
 	data.quaternion = bsread.normQuat(bs)
-	data.position = bsread.vector3d(bs)
-	data.moveSpeed = bsread.compressedVector(bs)
+	local pos = bsread.vector3d(bs)
+	data.position = {pos.x, pos.y, pos.z}
+	local speed = bsread.compressedVector(bs)
+	data.moveSpeed = {speed.x, speed.y, speed.z}
 	data.vehicleHealth = bsread.int16(bs)
 	data.playerHealth, data.armor = utils.decompress_health_and_armor(bsread.int8(bs))
-	data.currentWeapon = bsread.int8(bs)
+	data.weapon, data.specialKey = utils.decompress_weapon_and_special_key(bsread.int8(bs))
 	data.siren = bsread.bool(bs)
-	data.landingGear = bsread.bool(bs)
+	data.landingGearState = bsread.bool(bs)
 	if bsread.bool(bs) then
-		data.trainSpeed = bsread.int32(bs)
+		data.trainSpeed = bsread.float(bs)
+	else
+		data.trainSpeed = 0
 	end
 	if bsread.bool(bs) then
 		data.trailerId = bsread.int16(bs)
+	else
+		data.trailerId = 0
 	end
-	return {playerId, vehicleId, data}
+	return {playerId, data.vehicleId, data}
 end
 
 function handler.packet_vehicle_sync_writer(bs, data)
@@ -280,20 +299,21 @@ function handler.packet_vehicle_sync_writer(bs, data)
 	bswrite.int16(bs, data.leftRightKeys)
 	bswrite.int16(bs, data.upDownKeys)
 	bswrite.int16(bs, data.keysData)
-	bswrite.normQuat(bs, data.quaternion)
+	local quat = data.quaternion
+	bswrite.normQuat(bs, {quat[0], quat[1], quat[2], quat[3]})
 	bswrite.vector3d(bs, data.position)
 	bswrite.compressedVector(bs, data.moveSpeed)
 	bswrite.int16(bs, data.vehicleHealth)
 	bswrite.int8(bs, utils.compress_health_and_armor(data.playerHealth, data.armor))
-	bswrite.int8(bs, data.currentWeapon)
+	bswrite.int8(bs, utils.compress_weapon_and_special_key(data.weapon, data.specialKey))
 	bswrite.bool(bs, data.siren)
-	bswrite.bool(bs, data.landingGear)
-	bswrite.bool(bs, data.trainSpeed ~= nil)
-	if data.trainSpeed ~= nil then
-		bswrite.int32(bs, data.trainSpeed)
+	bswrite.bool(bs, data.landingGearState)
+	bswrite.bool(bs, data.trainSpeed ~= 0.0)
+	if data.trainSpeed ~= 0.0 then
+		bswrite.float(bs, data.trainSpeed)
 	end
-	bswrite.bool(bs, data.trailerId ~= nil)
-	if data.trailerId ~= nil then
+	bswrite.bool(bs, data.trailerId ~= 0)
+	if data.trailerId ~= 0 then
 		bswrite.int16(bs, data.trailerId)
 	end
 end

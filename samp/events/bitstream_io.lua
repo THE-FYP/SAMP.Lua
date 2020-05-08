@@ -221,6 +221,24 @@ mod.vector2d = {
 	end
 }
 
+mod.shortVector3d = {
+	read = function(bs)
+		local x, y, z =
+			raknetBitStreamReadInt16(bs),
+			raknetBitStreamReadInt16(bs),
+			raknetBitStreamReadInt16(bs)
+		if x >= 0x8000 then x = x - 0xFFFF end
+		if y >= 0x8000 then y = y - 0xFFFF end
+		if z >= 0x8000 then z = z - 0xFFFF end
+		return vector3d(x, y, z)
+	end,
+	write = function(bs, value)
+		raknetBitStreamWriteInt16(bs, value.x)
+		raknetBitStreamWriteInt16(bs, value.y)
+		raknetBitStreamWriteInt16(bs, value.z)
+	end
+}
+
 local function bitstream_io_interface(field)
 	return setmetatable({}, {
 		__index = function(t, index)
