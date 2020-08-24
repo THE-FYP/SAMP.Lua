@@ -62,8 +62,8 @@ function handler.rpc_init_game_reader(bs)
 	for i = 0, 212 - 1 do
 		vehicleModels[i] = bsread.int8(bs)
 	end
-	settings.vehicleFriendlyFire = bsread.int32(bs)
-	return {playerId, hostName, settings, vehicleModels}
+	settings.vehicleFriendlyFire = bsread.bool32(bs)
+	return {playerId, hostName, settings, vehicleModels, settings.vehicleFriendlyFire}
 end
 
 function handler.rpc_init_game_writer(bs, data)
@@ -98,7 +98,7 @@ function handler.rpc_init_game_writer(bs, data)
 	for i = 1, 212 do
 		bswrite.int8(bs, vehicleModels[i])
 	end
-	bswrite.int32(bs, settings.vehicleFriendlyFire)
+	bswrite.bool32(bs, settings.vehicleFriendlyFire)
 end
 
 --- onInitMenu

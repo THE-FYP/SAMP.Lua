@@ -117,6 +117,8 @@ mod.fixedString32 = {
 	end
 }
 
+mod.string256 = mod.fixedString32
+
 mod.encodedString2048 = {
 	read = function(bs) return raknetBitStreamDecodeString(bs, 2048) end,
 	write = function(bs, value) raknetBitStreamEncodeString(bs, value) end
