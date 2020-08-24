@@ -20,22 +20,22 @@ typedef struct VectorXYZ {
 } VectorXYZ;
 
 typedef struct SampKeys {
-	bool action : 1;
-	bool crouch : 1;
-	bool fire : 1;
-	bool sprint : 1;
-	bool secondaryAttack : 1;
-	bool jump : 1;
-	bool lookRight : 1;
-	bool handbrake : 1;
-	bool lookLeft : 1;
-	bool submission : 1;
-	bool walk : 1;
-	bool analogUp : 1;
-	bool analogDown : 1;
-	bool analogLeft : 1;
-	bool analogRight : 1;
-	bool _unused : 1;
+	uint8_t primaryFire : 1;
+	uint8_t horn_crouch : 1;
+	uint8_t secondaryFire_shoot : 1;
+	uint8_t accel_zoomOut : 1;
+	uint8_t enterExitCar : 1;
+	uint8_t decel_jump : 1;
+	uint8_t circleRight : 1;
+	uint8_t aim : 1;
+	uint8_t circleLeft : 1;
+	uint8_t landingGear_lookback : 1;
+	uint8_t unknown_walkSlow : 1;
+	uint8_t specialCtrlUp : 1;
+	uint8_t specialCtrlDown : 1;
+	uint8_t specialCtrlLeft : 1;
+	uint8_t specialCtrlRight : 1;
+	uint8_t _unknown : 1;
 } SampKeys;
 
 typedef struct PlayerSyncData {
@@ -57,8 +57,8 @@ typedef struct PlayerSyncData {
 	uint16_t  surfingVehicleId;
 	union {
 		struct {
-			uint16_t animationId;
-			uint8_t  animationFrameDelta;
+			uint16_t id;
+			uint8_t  frameDelta;
 			union {
 				struct {
 					bool    loop : 1;
@@ -70,9 +70,12 @@ typedef struct PlayerSyncData {
 					bool    regular : 1;
 				};
 				uint8_t value;
-			} animationFlags;
+			} flags;
+		} animation;
+		struct {
+			uint16_t  animationId;
+			uint16_t  animationFlags;
 		};
-		uint32_t animationData;
 	};
 } PlayerSyncData;
 
@@ -90,10 +93,10 @@ typedef struct VehicleSyncData {
 	float     vehicleHealth;
 	uint8_t   playerHealth;
 	uint8_t   armor;
-	uint8_t   weapon : 6;
+	uint8_t   currentWeapon : 6;
 	uint8_t   specialKey : 2;
 	uint8_t   siren;
-	bool      landingGearState;
+	uint8_t   landingGearState;
 	uint16_t  trailerId;
 	union {
 		float    bikeLean;
@@ -107,7 +110,7 @@ typedef struct PassengerSyncData {
 	uint8_t  seatId : 6;
 	bool     driveBy : 1;
 	bool     cuffed : 1;
-	uint8_t  weapon : 6;
+	uint8_t  currentWeapon : 6;
 	uint8_t  specialKey : 2;
 	uint8_t  health;
 	uint8_t  armor;
@@ -134,9 +137,20 @@ typedef struct UnoccupiedSyncData {
 typedef struct TrailerSyncData {
 	uint16_t  trailerId;
 	VectorXYZ position;
-	float quaternion[4];
-	VectorXYZ moveSpeed;
-	VectorXYZ turnSpeed;
+	union {
+		struct {
+			float quaternion[4];
+			VectorXYZ moveSpeed;
+			VectorXYZ turnSpeed;
+		};
+		/* Invalid. Retained for backwards compatibility. */
+		struct {
+			VectorXYZ roll;
+			VectorXYZ direction;
+			VectorXYZ speed;
+			uint32_t  unk;
+		};
+	};
 } TrailerSyncData;
 
 typedef struct SpectatorSyncData {
