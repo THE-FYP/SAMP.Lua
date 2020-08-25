@@ -3,6 +3,9 @@ SAMP.Lua is a lua library for MoonLoader that adds some features to make SA:MP m
 
 Currently this library is work in progress. At this moment the only implemented module is SAMP.Events.
 
+## Installation
+Copy the entire folder `samp` into the `moonloader/lib/` directory.
+
 ## SAMP.Events
 Gives ability to handle SA:MP incoming and outcoming low-level network packets by very easy way.
 
@@ -42,9 +45,6 @@ function sampev.onPlaySound(sound, coords)
 end
 ```
 The same way you can add your own types for more complex packet structures. See source code for more information and examples.
-
-## Installation
-Copy the entire folder `samp` into the `moonloader/lib/` directory.
 
 ## Links
 MoonLoader: http://blast.hk/moonloader/  
