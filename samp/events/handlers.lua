@@ -305,8 +305,8 @@ function handler.rpc_vehicle_stream_in_reader(bs)
 	data.type = bsread.int32(bs)
 	data.position = bsread.vector3d(bs)
 	data.rotation = bsread.float(bs)
-	data.interiorColor1 = bsread.int8(bs)
-	data.interiorColor2 = bsread.int8(bs)
+	data.bodyColor1 = bsread.int8(bs)
+	data.bodyColor2 = bsread.int8(bs)
 	data.health = bsread.float(bs)
 	data.interiorId = bsread.int8(bs)
 	data.doorDamageStatus = bsread.int32(bs)
@@ -318,8 +318,8 @@ function handler.rpc_vehicle_stream_in_reader(bs)
 		data.modSlots[i] = bsread.int8(bs)
 	end
 	data.paintJob = bsread.int8(bs)
-	data.bodyColor1 = bsread.int32(bs)
-	data.bodyColor2 = bsread.int32(bs)
+	data.interiorColor1 = bsread.int32(bs)
+	data.interiorColor2 = bsread.int32(bs)
 	return {vehicleId, data}
 end
 
@@ -330,8 +330,8 @@ function handler.rpc_vehicle_stream_in_writer(bs, data)
 	bswrite.int32(bs, data.type)
 	bswrite.vector3d(bs, data.position)
 	bswrite.float(bs, data.rotation)
-	bswrite.int8(bs, data.interiorColor1)
-	bswrite.int8(bs, data.interiorColor2)
+	bswrite.int8(bs, data.bodyColor1)
+	bswrite.int8(bs, data.bodyColor2)
 	bswrite.float(bs, data.health)
 	bswrite.int8(bs, data.interiorId)
 	bswrite.int32(bs, data.doorDamageStatus)
@@ -343,8 +343,8 @@ function handler.rpc_vehicle_stream_in_writer(bs, data)
 		bswrite.int8(bs, data.modSlots[i])
 	end
 	bswrite.int8(bs, data.paintJob)
-	bswrite.int32(bs, data.bodyColor1)
-	bswrite.int32(bs, data.bodyColor2)
+	bswrite.int32(bs, data.interiorColor1)
+	bswrite.int32(bs, data.interiorColor2)
 end
 
 local MATERIAL_TYPE = {
