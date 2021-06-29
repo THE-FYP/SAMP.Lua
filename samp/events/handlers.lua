@@ -12,7 +12,7 @@ local handler = {}
 function handler.rpc_send_give_take_damage_reader(bs)
 	local take = bsread.bool(bs) -- 'true' is take damage
 	local data = {
-		bsread.int16(bs), -- playerId
+		bsread.uint16(bs), -- playerId
 		bsread.float(bs), -- damage
 		bsread.int32(bs), -- weapon
 		bsread.int32(bs), -- bodypart
@@ -23,7 +23,7 @@ end
 
 function handler.rpc_send_give_take_damage_writer(bs, data)
 	bswrite.bool(bs, data[5]) -- give or take
-	bswrite.int16(bs, data[1]) -- playerId
+	bswrite.uint16(bs, data[1]) -- playerId
 	bswrite.float(bs, data[2]) -- damage
 	bswrite.int32(bs, data[3]) -- weapon
 	bswrite.int32(bs, data[4]) -- bodypart
@@ -43,11 +43,11 @@ function handler.rpc_init_game_reader(bs)
 	settings.nametagLOS            = bsread.bool(bs)
 	settings.tirePopping           = bsread.bool(bs)
 	settings.classesAvailable      = bsread.int32(bs)
-	local playerId                 = bsread.int16(bs)
+	local playerId                 = bsread.uint16(bs)
 	settings.showPlayerTags        = bsread.bool(bs)
 	settings.playerMarkersMode     = bsread.int32(bs)
-	settings.worldTime             = bsread.int8(bs)
-	settings.worldWeather          = bsread.int8(bs)
+	settings.worldTime             = bsread.uint8(bs)
+	settings.worldWeather          = bsread.uint8(bs)
 	settings.gravity               = bsread.float(bs)
 	settings.lanMode               = bsread.bool(bs)
 	settings.deathMoneyDrop        = bsread.int32(bs)
@@ -60,7 +60,7 @@ function handler.rpc_init_game_reader(bs)
 	local hostName                 = bsread.string8(bs)
 	local vehicleModels = {}
 	for i = 0, 212 - 1 do
-		vehicleModels[i] = bsread.int8(bs)
+		vehicleModels[i] = bsread.uint8(bs)
 	end
 	settings.vehicleFriendlyFire = bsread.bool32(bs)
 	return {playerId, hostName, settings, vehicleModels, settings.vehicleFriendlyFire}
@@ -80,11 +80,11 @@ function handler.rpc_init_game_writer(bs, data)
 	bswrite.bool(bs, settings.nametagLOS)
 	bswrite.bool(bs, settings.tirePopping)
 	bswrite.int32(bs, settings.classesAvailable)
-	bswrite.int16(bs, data[1]) -- playerId
+	bswrite.uint16(bs, data[1]) -- playerId
 	bswrite.bool(bs, settings.showPlayerTags)
 	bswrite.int32(bs, settings.playerMarkersMode)
-	bswrite.int8(bs, settings.worldTime)
-	bswrite.int8(bs, settings.worldWeather)
+	bswrite.uint8(bs, settings.worldTime)
+	bswrite.uint8(bs, settings.worldWeather)
 	bswrite.float(bs, settings.gravity)
 	bswrite.bool(bs, settings.lanMode)
 	bswrite.int32(bs, settings.deathMoneyDrop)
@@ -96,7 +96,7 @@ function handler.rpc_init_game_writer(bs, data)
 	bswrite.int32(bs, settings.lagCompMode)
 	bswrite.string8(bs, data[2]) -- hostName
 	for i = 1, 212 do
-		bswrite.int8(bs, vehicleModels[i])
+		bswrite.uint8(bs, vehicleModels[i])
 	end
 	bswrite.bool32(bs, settings.vehicleFriendlyFire)
 end
@@ -108,14 +108,14 @@ function handler.rpc_init_menu_reader(bs)
 	local columns = {}
 	local readColumn = function(width)
 		local title = bsread.fixedString32(bs)
-		local rowCount = bsread.int8(bs)
+		local rowCount = bsread.uint8(bs)
 		local column = {title = title, width = width, text = {}}
 		for i = 1, rowCount do
 			column.text[i] = bsread.fixedString32(bs)
 		end
 		return column
 	end
-	local menuId = bsread.int8(bs)
+	local menuId = bsread.uint8(bs)
 	local twoColumns = bsread.bool32(bs)
 	local menuTitle = bsread.fixedString32(bs)
 	local x = bsread.float(bs)
@@ -137,7 +137,7 @@ end
 
 function handler.rpc_init_menu_writer(bs, data)
 	local columns = data[6]
-	bswrite.int8(bs, data[1])      -- menuId
+	bswrite.uint8(bs, data[1])      -- menuId
 	bswrite.bool32(bs, data[5])    -- twoColumns
 	bswrite.fixedString32(bs, data[2]) -- title
 	bswrite.float(bs, data[3])     -- x
@@ -155,7 +155,7 @@ function handler.rpc_init_menu_writer(bs, data)
 	-- columns
 	for i = 1, (data[5] and 2 or 1) do
 		bswrite.fixedString32(bs, columns[i].title)
-		bswrite.int8(bs, #columns[i].text)
+		bswrite.uint8(bs, #columns[i].text)
 		for r, t in ipairs(columns[i].text) do
 			bswrite.fixedString32(bs, t)
 		end
@@ -167,11 +167,11 @@ function handler.packet_markers_sync_reader(bs)
 	local markers = {}
 	local players = bsread.int32(bs)
 	for i = 1, players do
-		local playerId = bsread.int16(bs)
+		local playerId = bsread.uint16(bs)
 		local active = bsread.bool(bs)
 		if active then
 			local vector3d = require 'vector3d'
-			local x, y, z = bsread.int16(bs), bsread.int16(bs), bsread.int16(bs)
+			local x, y, z = bsread.uint16(bs), bsread.uint16(bs), bsread.uint16(bs)
 			table.insert(markers, {playerId = playerId, active = true, coords = vector3d(x, y, z)})
 		else
 			table.insert(markers, {playerId = playerId, active = false})
@@ -184,12 +184,12 @@ function handler.packet_markers_sync_writer(bs, data)
 	bswrite.int32(bs, #data)
 	for i = 1, #data do
 		local it = data[i]
-		bswrite.int16(bs, it.playerId)
+		bswrite.uint16(bs, it.playerId)
 		bswrite.bool(bs, it.active)
 		if it.active then
-			bswrite.int16(bs, it.coords.x)
-			bswrite.int16(bs, it.coords.y)
-			bswrite.int16(bs, it.coords.z)
+			bswrite.uint16(bs, it.coords.x)
+			bswrite.uint16(bs, it.coords.y)
+			bswrite.uint16(bs, it.coords.z)
 		end
 	end
 end
@@ -198,23 +198,23 @@ end
 function handler.packet_player_sync_reader(bs)
 	local has_value = bsread.bool
 	local data = {}
-	local playerId = bsread.int16(bs)
-	if has_value(bs) then data.leftRightKeys = bsread.int16(bs) end
-	if has_value(bs) then data.upDownKeys = bsread.int16(bs) end
-	data.keysData = bsread.int16(bs)
+	local playerId = bsread.uint16(bs)
+	if has_value(bs) then data.leftRightKeys = bsread.uint16(bs) end
+	if has_value(bs) then data.upDownKeys = bsread.uint16(bs) end
+	data.keysData = bsread.uint16(bs)
 	data.position = bsread.vector3d(bs)
 	data.quaternion = bsread.normQuat(bs)
-	data.health, data.armor = utils.decompress_health_and_armor(bsread.int8(bs))
-	data.weapon = bsread.int8(bs)
-	data.specialAction = bsread.int8(bs)
+	data.health, data.armor = utils.decompress_health_and_armor(bsread.uint8(bs))
+	data.weapon = bsread.uint8(bs)
+	data.specialAction = bsread.uint8(bs)
 	data.moveSpeed = bsread.compressedVector(bs)
 	if has_value(bs) then
-		data.surfingVehicleId = bsread.int16(bs)
+		data.surfingVehicleId = bsread.uint16(bs)
 		data.surfingOffsets = bsread.vector3d(bs)
 	end
 	if has_value(bs) then
-		data.animationId = bsread.int16(bs)
-		data.animationFlags = bsread.int16(bs)
+		data.animationId = bsread.uint16(bs)
+		data.animationFlags = bsread.uint16(bs)
 	end
 	return {playerId, data}
 end
@@ -222,51 +222,51 @@ end
 function handler.packet_player_sync_writer(bs, data)
 	local playerId = data[1]
 	local data = data[2]
-	bswrite.int16(bs, playerId)
+	bswrite.uint16(bs, playerId)
 	bswrite.bool(bs, data.leftRightKeys ~= nil)
-	if data.leftRightKeys then bswrite.int16(bs, data.leftRightKeys) end
+	if data.leftRightKeys then bswrite.uint16(bs, data.leftRightKeys) end
 	bswrite.bool(bs, data.upDownKeys ~= nil)
-	if data.upDownKeys then bswrite.int16(bs, data.upDownKeys) end
-	bswrite.int16(bs, data.keysData)
+	if data.upDownKeys then bswrite.uint16(bs, data.upDownKeys) end
+	bswrite.uint16(bs, data.keysData)
 	bswrite.vector3d(bs, data.position)
 	bswrite.normQuat(bs, data.quaternion)
-	bswrite.int8(bs, utils.compress_health_and_armor(data.health, data.armor))
-	bswrite.int8(bs, data.weapon)
-	bswrite.int8(bs, data.specialAction)
+	bswrite.uint8(bs, utils.compress_health_and_armor(data.health, data.armor))
+	bswrite.uint8(bs, data.weapon)
+	bswrite.uint8(bs, data.specialAction)
 	bswrite.compressedVector(bs, data.moveSpeed)
 	bswrite.bool(bs, data.surfingVehicleId ~= nil)
 	if data.surfingVehicleId then
-		bswrite.int16(bs, data.surfingVehicleId)
+		bswrite.uint16(bs, data.surfingVehicleId)
 		bswrite.vector3d(bs, data.surfingOffsets)
 	end
 	bswrite.bool(bs, data.animationId ~= nil)
 	if data.animationId then
-		bswrite.int16(bs, data.animationId)
-		bswrite.int16(bs, data.animationFlags)
+		bswrite.uint16(bs, data.animationId)
+		bswrite.uint16(bs, data.animationFlags)
 	end
 end
 
 --- onVehicleSync
 function handler.packet_vehicle_sync_reader(bs)
 	local data = {}
-	local playerId = bsread.int16(bs)
-	local vehicleId = bsread.int16(bs)
-	data.leftRightKeys = bsread.int16(bs)
-	data.upDownKeys = bsread.int16(bs)
-	data.keysData = bsread.int16(bs)
+	local playerId = bsread.uint16(bs)
+	local vehicleId = bsread.uint16(bs)
+	data.leftRightKeys = bsread.uint16(bs)
+	data.upDownKeys = bsread.uint16(bs)
+	data.keysData = bsread.uint16(bs)
 	data.quaternion = bsread.normQuat(bs)
 	data.position = bsread.vector3d(bs)
 	data.moveSpeed = bsread.compressedVector(bs)
-	data.vehicleHealth = bsread.int16(bs)
-	data.playerHealth, data.armor = utils.decompress_health_and_armor(bsread.int8(bs))
-	data.currentWeapon = bsread.int8(bs)
+	data.vehicleHealth = bsread.uint16(bs)
+	data.playerHealth, data.armor = utils.decompress_health_and_armor(bsread.uint8(bs))
+	data.currentWeapon = bsread.uint8(bs)
 	data.siren = bsread.bool(bs)
 	data.landingGear = bsread.bool(bs)
 	if bsread.bool(bs) then
 		data.trainSpeed = bsread.int32(bs)
 	end
 	if bsread.bool(bs) then
-		data.trailerId = bsread.int16(bs)
+		data.trailerId = bsread.uint16(bs)
 	end
 	return {playerId, vehicleId, data}
 end
@@ -275,17 +275,17 @@ function handler.packet_vehicle_sync_writer(bs, data)
 	local playerId = data[1]
 	local vehicleId = data[2]
 	local data = data[3]
-	bswrite.int16(bs, playerId)
-	bswrite.int16(bs, vehicleId)
-	bswrite.int16(bs, data.leftRightKeys)
-	bswrite.int16(bs, data.upDownKeys)
-	bswrite.int16(bs, data.keysData)
+	bswrite.uint16(bs, playerId)
+	bswrite.uint16(bs, vehicleId)
+	bswrite.uint16(bs, data.leftRightKeys)
+	bswrite.uint16(bs, data.upDownKeys)
+	bswrite.uint16(bs, data.keysData)
 	bswrite.normQuat(bs, data.quaternion)
 	bswrite.vector3d(bs, data.position)
 	bswrite.compressedVector(bs, data.moveSpeed)
-	bswrite.int16(bs, data.vehicleHealth)
-	bswrite.int8(bs, utils.compress_health_and_armor(data.playerHealth, data.armor))
-	bswrite.int8(bs, data.currentWeapon)
+	bswrite.uint16(bs, data.vehicleHealth)
+	bswrite.uint8(bs, utils.compress_health_and_armor(data.playerHealth, data.armor))
+	bswrite.uint8(bs, data.currentWeapon)
 	bswrite.bool(bs, data.siren)
 	bswrite.bool(bs, data.landingGear)
 	bswrite.bool(bs, data.trainSpeed ~= nil)
@@ -294,30 +294,30 @@ function handler.packet_vehicle_sync_writer(bs, data)
 	end
 	bswrite.bool(bs, data.trailerId ~= nil)
 	if data.trailerId ~= nil then
-		bswrite.int16(bs, data.trailerId)
+		bswrite.uint16(bs, data.trailerId)
 	end
 end
 
 --- onVehicleStreamIn
 function handler.rpc_vehicle_stream_in_reader(bs)
 	local data = {modSlots = {}}
-	local vehicleId = bsread.int16(bs)
+	local vehicleId = bsread.uint16(bs)
 	data.type = bsread.int32(bs)
 	data.position = bsread.vector3d(bs)
 	data.rotation = bsread.float(bs)
-	data.bodyColor1 = bsread.int8(bs)
-	data.bodyColor2 = bsread.int8(bs)
+	data.bodyColor1 = bsread.uint8(bs)
+	data.bodyColor2 = bsread.uint8(bs)
 	data.health = bsread.float(bs)
-	data.interiorId = bsread.int8(bs)
+	data.interiorId = bsread.uint8(bs)
 	data.doorDamageStatus = bsread.int32(bs)
 	data.panelDamageStatus = bsread.int32(bs)
-	data.lightDamageStatus = bsread.int8(bs)
-	data.tireDamageStatus = bsread.int8(bs)
-	data.addSiren = bsread.int8(bs)
+	data.lightDamageStatus = bsread.uint8(bs)
+	data.tireDamageStatus = bsread.uint8(bs)
+	data.addSiren = bsread.uint8(bs)
 	for i = 1, 14 do
-		data.modSlots[i] = bsread.int8(bs)
+		data.modSlots[i] = bsread.uint8(bs)
 	end
-	data.paintJob = bsread.int8(bs)
+	data.paintJob = bsread.uint8(bs)
 	data.interiorColor1 = bsread.int32(bs)
 	data.interiorColor2 = bsread.int32(bs)
 	return {vehicleId, data}
@@ -326,23 +326,23 @@ end
 function handler.rpc_vehicle_stream_in_writer(bs, data)
 	local vehicleId = data[1]
 	local data = data[2]
-	bswrite.int16(bs, vehicleId)
+	bswrite.uint16(bs, vehicleId)
 	bswrite.int32(bs, data.type)
 	bswrite.vector3d(bs, data.position)
 	bswrite.float(bs, data.rotation)
-	bswrite.int8(bs, data.bodyColor1)
-	bswrite.int8(bs, data.bodyColor2)
+	bswrite.uint8(bs, data.bodyColor1)
+	bswrite.uint8(bs, data.bodyColor2)
 	bswrite.float(bs, data.health)
-	bswrite.int8(bs, data.interiorId)
+	bswrite.uint8(bs, data.interiorId)
 	bswrite.int32(bs, data.doorDamageStatus)
 	bswrite.int32(bs, data.panelDamageStatus)
-	bswrite.int8(bs, data.lightDamageStatus)
-	bswrite.int8(bs, data.tireDamageStatus)
-	bswrite.int8(bs, data.addSiren)
+	bswrite.uint8(bs, data.lightDamageStatus)
+	bswrite.uint8(bs, data.tireDamageStatus)
+	bswrite.uint8(bs, data.addSiren)
 	for i = 1, 14 do
-		bswrite.int8(bs, data.modSlots[i])
+		bswrite.uint8(bs, data.modSlots[i])
 	end
-	bswrite.int8(bs, data.paintJob)
+	bswrite.uint8(bs, data.paintJob)
 	bswrite.int32(bs, data.interiorColor1)
 	bswrite.int32(bs, data.interiorColor2)
 end
@@ -355,8 +355,8 @@ local MATERIAL_TYPE = {
 
 local function read_object_material(bs)
 	local data = {}
-	data.materialId = bsread.int8(bs)
-	data.modelId = bsread.int16(bs)
+	data.materialId = bsread.uint8(bs)
+	data.modelId = bsread.uint16(bs)
 	data.libraryName = bsread.string8(bs)
 	data.textureName = bsread.string8(bs)
 	data.color = bsread.int32(bs)
@@ -365,9 +365,9 @@ local function read_object_material(bs)
 end
 
 local function write_object_material(bs, data)
-	bswrite.int8(bs, data.type)
-	bswrite.int8(bs, data.materialId)
-	bswrite.int16(bs, data.modelId)
+	bswrite.uint8(bs, data.type)
+	bswrite.uint8(bs, data.materialId)
+	bswrite.uint16(bs, data.modelId)
 	bswrite.string8(bs, data.libraryName)
 	bswrite.string8(bs, data.textureName)
 	bswrite.int32(bs, data.color)
@@ -375,36 +375,36 @@ end
 
 local function read_object_material_text(bs)
 	local data = {}
-	data.materialId = bsread.int8(bs)
-	data.materialSize = bsread.int8(bs)
+	data.materialId = bsread.uint8(bs)
+	data.materialSize = bsread.uint8(bs)
 	data.fontName = bsread.string8(bs)
-	data.fontSize = bsread.int8(bs)
-	data.bold = bsread.int8(bs)
+	data.fontSize = bsread.uint8(bs)
+	data.bold = bsread.uint8(bs)
 	data.fontColor = bsread.int32(bs)
 	data.backGroundColor = bsread.int32(bs)
-	data.align = bsread.int8(bs)
+	data.align = bsread.uint8(bs)
 	data.text = bsread.encodedString2048(bs)
 	data.type = MATERIAL_TYPE.TEXT
 	return data
 end
 
 local function write_object_material_text(bs, data)
-	bswrite.int8(bs, data.type)
-	bswrite.int8(bs, data.materialId)
-	bswrite.int8(bs, data.materialSize)
+	bswrite.uint8(bs, data.type)
+	bswrite.uint8(bs, data.materialId)
+	bswrite.uint8(bs, data.materialSize)
 	bswrite.string8(bs, data.fontName)
-	bswrite.int8(bs, data.fontSize)
-	bswrite.int8(bs, data.bold)
+	bswrite.uint8(bs, data.fontSize)
+	bswrite.uint8(bs, data.bold)
 	bswrite.int32(bs, data.fontColor)
 	bswrite.int32(bs, data.backGroundColor)
-	bswrite.int8(bs, data.align)
+	bswrite.uint8(bs, data.align)
 	bswrite.encodedString2048(bs, data.text)
 end
 
 --- onSetObjectMaterial
 function handler.rpc_set_object_material_reader(bs)
-	local objectId = bsread.int16(bs)
-	local materialType = bsread.int8(bs)
+	local objectId = bsread.uint16(bs)
+	local materialType = bsread.uint8(bs)
 	local material
 	if materialType == MATERIAL_TYPE.TEXTURE then
 		material = read_object_material(bs)
@@ -418,7 +418,7 @@ end
 function handler.rpc_set_object_material_writer(bs, data)
 	local objectId = data[1]
 	local mat = data[2]
-	bswrite.int16(bs, objectId)
+	bswrite.uint16(bs, objectId)
 	if mat.type == MATERIAL_TYPE.TEXTURE then
 		write_object_material(bs, mat)
 	elseif mat.type == MATERIAL_TYPE.TEXT then
@@ -429,22 +429,22 @@ end
 --- onCreateObject
 function handler.rpc_create_object_reader(bs)
 	local data = {materials = {}, materialText = {}}
-	local objectId = bsread.int16(bs)
+	local objectId = bsread.uint16(bs)
 	data.modelId = bsread.int32(bs)
 	data.position = bsread.vector3d(bs)
 	data.rotation = bsread.vector3d(bs)
 	data.drawDistance = bsread.float(bs)
 	data.noCameraCol = bsread.bool8(bs)
-	data.attachToVehicleId = bsread.int16(bs)
-	data.attachToObjectId = bsread.int16(bs)
+	data.attachToVehicleId = bsread.uint16(bs)
+	data.attachToObjectId = bsread.uint16(bs)
 	if data.attachToVehicleId ~= 0xFFFF or data.attachToObjectId ~= 0xFFFF then
 		data.attachOffsets = bsread.vector3d(bs)
 		data.attachRotation = bsread.vector3d(bs)
 		data.syncRotation = bsread.bool8(bs)
 	end
-	data.texturesCount = bsread.int8(bs)
+	data.texturesCount = bsread.uint8(bs)
 	while raknetBitStreamGetNumberOfUnreadBits(bs) >= 8 do
-		local materialType = bsread.int8(bs)
+		local materialType = bsread.uint8(bs)
 		if materialType == MATERIAL_TYPE.TEXTURE then
 			table.insert(data.materials, read_object_material(bs))
 		elseif materialType == MATERIAL_TYPE.TEXT then
@@ -458,20 +458,20 @@ end
 function handler.rpc_create_object_writer(bs, data)
 	local objectId = data[1]
 	local data = data[2]
-	bswrite.int16(bs, objectId)
+	bswrite.uint16(bs, objectId)
 	bswrite.int32(bs, data.modelId)
 	bswrite.vector3d(bs, data.position)
 	bswrite.vector3d(bs, data.rotation)
 	bswrite.float(bs, data.drawDistance)
 	bswrite.bool8(bs, data.noCameraCol)
-	bswrite.int16(bs, data.attachToVehicleId)
-	bswrite.int16(bs, data.attachToObjectId)
+	bswrite.uint16(bs, data.attachToVehicleId)
+	bswrite.uint16(bs, data.attachToObjectId)
 	if data.attachToVehicleId ~= 0xFFFF or data.attachToObjectId ~= 0xFFFF then
 		bswrite.vector3d(bs, data.attachOffsets)
 		bswrite.vector3d(bs, data.attachRotation)
 		bswrite.bool8(bs, data.syncRotation)
 	end
-	bswrite.int8(bs, data.texturesCount)
+	bswrite.uint8(bs, data.texturesCount)
 	for _, it in ipairs(data.materials) do
 		write_object_material(bs, it)
 	end
@@ -483,7 +483,7 @@ end
 function handler.rpc_update_scores_and_pings_reader(bs)
 	local data = {}
 	for i = 1, raknetBitStreamGetNumberOfBytesUsed(bs) / 10 do
-		local playerId = bsread.int16(bs)
+		local playerId = bsread.uint16(bs)
 		local playerScore = bsread.int32(bs)
 		local playerPing = bsread.int32(bs)
 		data[playerId] = {score = playerScore, ping = playerPing}
@@ -493,33 +493,33 @@ end
 
 function handler.rpc_update_scores_and_pings_writer(bs, data)
 	for id, info in pairs(data[1]) do
-		bswrite.int16(bs, id)
+		bswrite.uint16(bs, id)
 		bswrite.int32(bs, info.score)
 		bswrite.int32(bs, info.ping)
 	end
 end
 
 function handler.packet_weapons_update_reader(bs)
-	local playerTarget = bsread.int16(bs)
-	local actorTarget = bsread.int16(bs)
+	local playerTarget = bsread.uint16(bs)
+	local actorTarget = bsread.uint16(bs)
 	local weapons = {}
 	local count = raknetBitStreamGetNumberOfUnreadBits(bs) / 32
 	for i = 1, count do
-		local slot = bsread.int8(bs)
-		local weapon = bsread.int8(bs)
-		local ammo = bsread.int16(bs)
+		local slot = bsread.uint8(bs)
+		local weapon = bsread.uint8(bs)
+		local ammo = bsread.uint16(bs)
 		weapons[i] = {slot = slot, weapon = weapon, ammo = ammo}
 	end
 	return {playerTarget, actorTarget, weapons}
 end
 
 function handler.packet_weapons_update_writer(bs, data)
-	bswrite.int16(bs, data[1])
-	bswrite.int16(bs, data[2])
+	bswrite.uint16(bs, data[1])
+	bswrite.uint16(bs, data[2])
 	for i, weap in ipairs(data[3]) do
-		bswrite.int8(bs, weap.slot)
-		bswrite.int8(bs, weap.weapon)
-		bswrite.int16(bs, weap.ammo)
+		bswrite.uint8(bs, weap.slot)
+		bswrite.uint8(bs, weap.weapon)
+		bswrite.uint16(bs, weap.ammo)
 	end
 end
 

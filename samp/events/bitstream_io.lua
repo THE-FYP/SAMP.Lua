@@ -25,14 +25,44 @@ mod.bool = {
 	write = function(bs, value) return raknetBitStreamWriteBool(bs, value) end
 }
 
-mod.int8 = {
+mod.uint8 = {
 	read = function(bs) return raknetBitStreamReadInt8(bs) end,
 	write = function(bs, value) return raknetBitStreamWriteInt8(bs, value) end
 }
 
-mod.int16 = {
+mod.uint16 = {
 	read = function(bs) return raknetBitStreamReadInt16(bs) end,
 	write = function(bs, value) return raknetBitStreamWriteInt16(bs, value) end
+}
+
+mod.uint32 = {
+	read = function(bs)
+		local v = raknetBitStreamReadInt32(bs)
+		return v < 0 and 0x100000000 + v or v
+	end,
+	write = function(bs, value)
+		return raknetBitStreamWriteInt32(bs, value)
+	end
+}
+
+mod.int8 = {
+	read = function(bs)
+		local v = raknetBitStreamReadInt8(bs)
+		return v >= 0x80 and v - 0x100 or v
+	end,
+	write = function(bs, value)
+		return raknetBitStreamWriteInt8(bs, value)
+	end
+}
+
+mod.int16 = {
+	read = function(bs)
+		local v = raknetBitStreamReadInt16(bs)
+		return v >= 0x8000 and v - 0x10000 or v
+	end,
+	write = function(bs, value)
+		return raknetBitStreamWriteInt16(bs, value)
+	end
 }
 
 mod.int32 = {
