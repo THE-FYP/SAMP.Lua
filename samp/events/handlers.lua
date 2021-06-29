@@ -171,7 +171,7 @@ function handler.packet_markers_sync_reader(bs)
 		local active = bsread.bool(bs)
 		if active then
 			local vector3d = require 'vector3d'
-			local x, y, z = bsread.uint16(bs), bsread.uint16(bs), bsread.uint16(bs)
+			local x, y, z = bsread.int16(bs), bsread.int16(bs), bsread.int16(bs)
 			table.insert(markers, {playerId = playerId, active = true, coords = vector3d(x, y, z)})
 		else
 			table.insert(markers, {playerId = playerId, active = false})
