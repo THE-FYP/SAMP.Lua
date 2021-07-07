@@ -158,7 +158,8 @@ INCOMING_RPCS[RPC.SHOWTEXTDRAW]               = {'onShowTextDraw',
     {modelId = 'uint16'},
     {rotation = 'vector3d'},
     {zoom = 'float'},
-    {color = 'int32'},
+    {color1 = 'int16'},
+    {color2 = 'int16'},
     {text = 'string16'}
   }}
 }
